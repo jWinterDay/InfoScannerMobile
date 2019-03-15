@@ -89,12 +89,26 @@ packages:
     source: hosted
     version: "1.4.0"
   quiver:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: quiver
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.0.1"
+  rxdart:
+    dependency: "direct main"
+    description:
+      name: rxdart
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.21.0"
+  shared_preferences:
+    dependency: "direct main"
+    description:
+      name: shared_preferences
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.5.1+1"
   sky_engine:
     dependency: transitive
     description: flutter
@@ -156,6 +170,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.2.2"
+  threading:
+    dependency: "direct main"
+    description:
+      name: threading
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.0.10"
   typed_data:
     dependency: transitive
     description:

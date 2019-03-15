@@ -1,43 +1,49 @@
-import 'package:sqflite/sqflite.dart';
+import 'package:sqflite/sqflite.dart' as sqlflite;
 import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart';
 import 'dart:io';
 
-//models
-import 'package:info_scanner_mobile/Model/Project.dart';
 
 class DBProvider {
-  static Database _database;
-  //static final DBProvider db = DBProvider._();
+  static sqlflite.Database _database;
+
+  static final DBProvider instance = DBProvider._();
 
   //constructor
-  //DBProvider._();
+  DBProvider._();
 
-  Future<Database> get database async {
+  Future<sqlflite.Database> get database async {
     if (_database != null) {
+      if (!_database.isOpen) {
+        assert(!_database.isOpen, 'ProjectDAO.getProjects. Db is closed');
+        DBProvider._database = await open();
+      }
+
       return _database;
     }
 
-    return await initDB();
+    DBProvider._database = await open();
+    return DBProvider._database;
   }
 
   close() async {
+    print('DATABASE. close');
     if (_database != null) {
       await _database.close();
     }
   }
 
-  initDB() async {
+  open() async {
     Directory documentsDirectory = await getApplicationDocumentsDirectory();
     String path = join(documentsDirectory.path, 'InfoScanner.db');
 
-    print('initDB');
+    print('DATABASE. open');
     //Database db;
 
     try {
-      Database db = await openDatabase(
+      sqlflite.Database db = await sqlflite.openDatabase(
         path,
-        version: _getVersion(),
+        version: 19,
         onCreate: _onCreate,
         onOpen: _onOpen,
         onUpgrade: _onUpgrade,
@@ -53,51 +59,49 @@ class DBProvider {
     }
   }
 
-  int _getVersion() {
-    return 11;
-  }
-
-  _onCreate (Database db, int version) async {
-    print('onCreate');
+  _onCreate (sqlflite.Database db, int version) async {
+    print('DATABASE. onCreate');
 
     await db.execute(
       """create table project (
         project_id integer primary key autoincrement,
         name text,
         note text,
-        begin_date integer,
+        begin_date integer default (CURRENT_TIMESTAMP),
         end_date integer,
-        yooo integer)
+        project_guid text default (hex(randomblob(16))))
       """
     );
   }
 
-  _onUpgrade (Database db, int oldVersion, int newVersion) async {
-    print('onUpgrade');
-    // If you need to add a column
+  _onUpgrade (sqlflite.Database db, int oldVersion, int newVersion) async {
+    print('DATABASE. onUpgrade');
+
     if (newVersion > oldVersion) {
+      print('begin upgrade database....newV: $newVersion, oldV: $oldVersion');
+
       await db.execute(
-      """create table project (
-        project_id integer primary key autoincrement,
-        name text,
-        note text,
-        begin_date integer,
-        end_date integer,
-        yooo integer)
-      """
+        """create table project (
+          project_id integer primary key autoincrement,
+          name text,
+          note text,
+          begin_date integer,
+          end_date integer,
+          project_guid text default (hex(randomblob(16))));
+        """
       );
     }
   }
 
-  _onOpen (Database db) async {
-    print('onOpen');
+  _onOpen (sqlflite.Database db) async {
+    print('DATABASE. onOpen');
   }
 
-  _onDowngrade (Database db, int oldVersion, int newVersion) async {
-    print('onDowngrade');
+  _onDowngrade (sqlflite.Database db, int oldVersion, int newVersion) async {
+    print('DATABASE. onDowngrade');
   }
 
-  _onConfigure (Database db) async {
-    print('onConfigure');
+  _onConfigure (sqlflite.Database db) async {
+    print('DATABASE. onConfigure');
   }
 }
