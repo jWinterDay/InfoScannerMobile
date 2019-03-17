@@ -9,4 +9,12 @@ class ProjectRepository {
   Future<List<Project>> fetchAllProjects() => _projectProvider.getProjects();
   
   addProjects(Project project) => _projectProvider.newProject(project);
+
+  preRemoveProject(Project project) => _projectProvider.preDeleteProject(project);
+
+  removeProject(Project project) => _projectProvider.deleteProject(project);
+
+  restoreProject(Project project) => _projectProvider.restoreProject(project);
+
+  Future<bool> isCanRemoveProject(Project project) => _projectProvider.isCanDeleteProject(project);
 }

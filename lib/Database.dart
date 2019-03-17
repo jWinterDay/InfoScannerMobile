@@ -43,7 +43,7 @@ class DBProvider {
     try {
       sqlflite.Database db = await sqlflite.openDatabase(
         path,
-        version: 19,
+        version: 20,
         onCreate: _onCreate,
         onOpen: _onOpen,
         onUpgrade: _onUpgrade,
@@ -63,13 +63,16 @@ class DBProvider {
     print('DATABASE. onCreate');
 
     await db.execute(
-      """create table project (
+      """
+      create table project (
         project_id integer primary key autoincrement,
-        name text,
+        name text not null,
         note text,
-        begin_date integer default (CURRENT_TIMESTAMP),
+        begin_date integer not null,
         end_date integer,
-        project_guid text default (hex(randomblob(16))))
+        project_guid text not null default (hex(randomblob(16))),
+        device_guid text not null
+      )
       """
     );
   }
@@ -80,16 +83,21 @@ class DBProvider {
     if (newVersion > oldVersion) {
       print('begin upgrade database....newV: $newVersion, oldV: $oldVersion');
 
-      await db.execute(
-        """create table project (
-          project_id integer primary key autoincrement,
-          name text,
-          note text,
-          begin_date integer,
-          end_date integer,
-          project_guid text default (hex(randomblob(16))));
-        """
-      );
+      await db.transaction((txn) async {
+        await txn.execute('drop table project');
+        await txn.execute(
+          """
+          create table project (
+            project_id integer primary key autoincrement,
+            name text not null,
+            note text,
+            begin_date integer not null,
+            end_date integer,
+            project_guid text not null default (hex(randomblob(16))),
+            device_guid text not null
+          )
+          """);
+      });
     }
   }
 

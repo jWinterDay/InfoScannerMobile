@@ -25,23 +25,18 @@ class Project {
   int endDate;//UTC
   String note;
   String projectGuid;
+  String deviceGuid;
 
   //constructor
   Project({
-    int projectId,
-    String name,
-    int beginDate,
-    int endDate,
-    String note,
-    String projectGuid,
-  }) {
-    this.projectId = projectId;
-    this.name = name;
-    this.beginDate = beginDate ?? DateTime.now().millisecondsSinceEpoch;
-    this.endDate = endDate;
-    this.note = note;
-    this.projectGuid = projectGuid;
-  }
+    this.projectId,
+    this.name,
+    this.beginDate,
+    this.endDate,
+    this.note,
+    this.projectGuid,
+    this.deviceGuid,
+  });
 
   factory Project.fromMap(Map<String, dynamic> json) => new Project(
       projectId: json["project_id"],
@@ -50,6 +45,7 @@ class Project {
       endDate: json["end_date"],//dateFormatter.parse(json["beginDate"]),
       note: json["note"],
       projectGuid: json["project_guid"],
+      deviceGuid: json["device_guid"],
   );
 
   Map<String, dynamic> toMap() => {
@@ -58,24 +54,30 @@ class Project {
     "begin_date": beginDate,//dateFormatter.format(beginDate),
     "end_date": endDate,//endDate == null ? null : dateFormatter.format(endDate),
     "note": note,
-    "project_guid": projectGuid
+    "project_guid": projectGuid,
+    "device_guid": deviceGuid,
   };
 
-  bool operator == (o) => o is Project && projectGuid == o.projectGuid;
+  bool operator == (o) => 
+    o is Project 
+    && projectGuid == o.projectGuid
+    && name == o.name
+    && deviceGuid == o.deviceGuid;
 
-  int get hashCode => quiver.hash2(projectId.hashCode, projectGuid.hashCode);
+  int get hashCode => quiver.hash3(projectGuid.hashCode, name.hashCode, deviceGuid.hashCode);
 
   @override
   String toString() {
     return
     """
     (
-      projectId: ${this.projectId},
-      name: ${this.name},
-      beginDate: ${this.beginDate},
-      endDate: ${this.endDate},
-      note: ${this.note},
-      projectGuid: ${this.projectGuid}
+      projectId: $projectId,
+      name: $name,
+      beginDate: $beginDate,
+      endDate: $endDate,
+      note: $note,
+      projectGuid: $projectGuid,
+      deviceGuid: $deviceGuid
     )
     """;
   }
