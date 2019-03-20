@@ -3,45 +3,53 @@ import 'package:intl/intl.dart';
 
 import '../models/project_model.dart';
 import '../blocs/projects_bloc.dart';
+import '../ui/project_edit_screen.dart';
 
-class ProjectList extends StatefulWidget {
+class ProjectListScreen extends StatefulWidget {
 
   @override
   _ProjectListState createState() => _ProjectListState();
 }
 
-class _ProjectListState extends State<ProjectList> {
-  String _title = 'My projects';
-
+class _ProjectListState extends State<ProjectListScreen> {
   //add new project
   void _addProject() {
     var newProject = new Project();
     bloc.addNewProject(newProject);
   }
 
-  @override
-  void initState() {
-    super.initState();
+  void _refreshProjects() {
     bloc.fetchAllProjects();
+  }
+
+  void _openProjectSettings() {
+    
   }
 
   @override
   void dispose() {
     super.dispose();
+
     bloc.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    bloc.fetchAllProjects();
+
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          this._title,
+          'My projects',
           style: TextStyle(color: Colors.black),
         ),
+        actions: <Widget>[
+          IconButton(icon: Icon(Icons.sync), onPressed: _refreshProjects),
+          IconButton(icon: Icon(Icons.settings), onPressed: _openProjectSettings),
+        ],
       ),
       body: StreamBuilder(
-        stream: bloc.allProjects,
+        stream: bloc.allProjectsStream,
         builder: (context, AsyncSnapshot<List<Project>> snapshot) {
           if (snapshot.hasData) {
             return Scaffold(
@@ -67,6 +75,16 @@ class _ProjectListState extends State<ProjectList> {
 
 Widget buildList(AsyncSnapshot<List<Project>> snapshot) {
   final DateFormat dateFormatter = new DateFormat('yyyy.MM.dd HH:mm:ss');
+
+  void _editProject(BuildContext context, Project project) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) {
+          return ProjectEditScreen(project: project);// key: UniqueKey(), project);
+        }
+      ),
+    );
+  }
 
   if (snapshot.data.isEmpty) {
     return Center(
@@ -123,7 +141,7 @@ Widget buildList(AsyncSnapshot<List<Project>> snapshot) {
                 .of(context)
                 .showSnackBar(
                   SnackBar(
-                    duration: Duration(seconds: 5),
+                    duration: Duration(seconds: 2),
                     content: Row(
                       children: <Widget>[
                         Text('${project.name} removed'),
@@ -169,7 +187,8 @@ Widget buildList(AsyncSnapshot<List<Project>> snapshot) {
               },
               value: project.endDate == null,
             ),
-            onTap: () => {
+            onTap: ()  {
+              _editProject(context, project);
               //print('tap'),
               //bloc.fetchAllProjects()
             },

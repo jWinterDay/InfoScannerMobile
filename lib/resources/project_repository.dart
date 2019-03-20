@@ -10,6 +10,8 @@ class ProjectRepository {
   
   addProjects(Project project) => _projectProvider.newProject(project);
 
+  updateProjects(Project project) => _projectProvider.udpateProject(project);
+
   preRemoveProject(Project project) => _projectProvider.preDeleteProject(project);
 
   removeProject(Project project) => _projectProvider.deleteProject(project);

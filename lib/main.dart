@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 //import 'dart:isolate';
 //import 'package:flutter/foundation.dart' as foundation;
 
-import 'ui/project_list.dart';
+import 'ui/project_list_screen.dart';
 
 
 void main() => runApp(App());
@@ -19,7 +19,7 @@ class App extends StatelessWidget {
         primarySwatch: Colors.green,
       ),
       home: Scaffold(
-        body: ProjectList()
+        body: ProjectListScreen()
       )
     );
   }
