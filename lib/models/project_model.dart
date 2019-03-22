@@ -26,6 +26,8 @@ class Project {
   String note;
   String projectGuid;
   String deviceGuid;
+  String syncDate;
+  String syncDeviceGuid;
 
   //constructor
   Project({
@@ -36,6 +38,8 @@ class Project {
     this.note,
     this.projectGuid,
     this.deviceGuid,
+    this.syncDate,
+    this.syncDeviceGuid
   });
 
   factory Project.fromMap(Map<String, dynamic> json) => new Project(
@@ -46,6 +50,8 @@ class Project {
       note: json["note"],
       projectGuid: json["project_guid"],
       deviceGuid: json["device_guid"],
+      syncDate: json["sync_date"],
+      syncDeviceGuid: json["sync_device_guid"],
   );
 
   Map<String, dynamic> toMap() => {
@@ -56,6 +62,8 @@ class Project {
     "note": note,
     "project_guid": projectGuid,
     "device_guid": deviceGuid,
+    "devicesync_date_guid": syncDate,
+    "sync_device_guid": syncDeviceGuid,
   };
 
   bool operator == (o) => 
@@ -77,7 +85,9 @@ class Project {
       endDate: $endDate,
       note: $note,
       projectGuid: $projectGuid,
-      deviceGuid: $deviceGuid
+      deviceGuid: $deviceGuid,
+      syncDate: $syncDate,
+      syncDeviceGuid: $syncDeviceGuid
     )
     """;
   }

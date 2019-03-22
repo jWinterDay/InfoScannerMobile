@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../models/project_model.dart';
-import '../blocs/projects_bloc.dart';
-import '../ui/project_edit_screen.dart';
+import '../../models/project_model.dart';
+import '../../blocs/projects_bloc.dart';
+import '../../ui/project/project_edit_screen.dart';
+
+//final ProjectsBloc bloc = ProjectsBloc();//ProjectsBloc();
 
 class ProjectListScreen extends StatefulWidget {
 
@@ -12,10 +14,16 @@ class ProjectListScreen extends StatefulWidget {
 }
 
 class _ProjectListState extends State<ProjectListScreen> {
-  //add new project
+  final ProjectsBloc bloc = ProjectsBloc();
+
   void _addProject() {
-    var newProject = new Project();
-    bloc.addNewProject(newProject);
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) {
+          return ProjectEditScreen(project: null, bloc: bloc,);
+        }
+      ),
+    );
   }
 
   void _refreshProjects() {
@@ -54,7 +62,7 @@ class _ProjectListState extends State<ProjectListScreen> {
           if (snapshot.hasData) {
             return Scaffold(
               body: Center(
-                child: buildList(snapshot)
+                child: buildList(snapshot, bloc: bloc)
               ),
               floatingActionButton: FloatingActionButton(
                 onPressed: _addProject,
@@ -73,14 +81,14 @@ class _ProjectListState extends State<ProjectListScreen> {
   }
 }
 
-Widget buildList(AsyncSnapshot<List<Project>> snapshot) {
+Widget buildList(AsyncSnapshot<List<Project>> snapshot, {@required ProjectsBloc bloc }) {
   final DateFormat dateFormatter = new DateFormat('yyyy.MM.dd HH:mm:ss');
 
   void _editProject(BuildContext context, Project project) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (BuildContext context) {
-          return ProjectEditScreen(project: project);// key: UniqueKey(), project);
+          return ProjectEditScreen(project: project, bloc: bloc,);
         }
       ),
     );
@@ -177,16 +185,16 @@ Widget buildList(AsyncSnapshot<List<Project>> snapshot) {
             leading: Text(project.projectId.toString()),
             title: Text(project.name),
             subtitle: Text('${beginDateStr??''} ${project.note??''}'),
-            trailing: Checkbox(
+            /*trailing: Checkbox(
               onChanged: (val) {
-                /*if (val) {
+                if (val) {
                   bloc.restoreProject(project);
                 } else {
                   bloc.preRemoveProject(project);
-                }*/
+                }
               },
               value: project.endDate == null,
-            ),
+            ),*/
             onTap: ()  {
               _editProject(context, project);
               //print('tap'),

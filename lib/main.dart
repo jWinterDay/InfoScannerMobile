@@ -5,7 +5,11 @@ import 'package:flutter/material.dart';
 //import 'dart:isolate';
 //import 'package:flutter/foundation.dart' as foundation;
 
-import 'ui/project_list_screen.dart';
+import 'ui/project/project_list_screen.dart';
+import 'ui/home_screen.dart';
+import 'ui/palette/palette_list_screen.dart';
+import 'ui/auth/user_login_screen.dart';
+import 'ui/auth/user_register_screen.dart';
 
 
 void main() => runApp(App());
@@ -18,9 +22,17 @@ class App extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.green,
       ),
-      home: Scaffold(
-        body: ProjectListScreen()
-      )
+      initialRoute: '/',
+      routes: {
+        '/': (context) => HomeScreen(),
+        '/project': (context) => ProjectListScreen(),
+        '/palette': (context) => PaletteListScreen(),
+        '/user_login': (context) => UserLoginScreen(),
+        '/user_register': (context) => UserRegisterScreen(),
+      },
+      //home: Scaffold(
+      //  body: HomeScreen()//ProjectListScreen()
+      //)
     );
   }
 }

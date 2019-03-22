@@ -8,6 +8,8 @@ import '../models/project_model.dart';
 
 Function projectEq = const ListEquality().equals;
 
+//final bloc = ProjectsBloc();
+
 class ProjectsBloc {
   final _projectRepository = ProjectRepository();
   final _projectsFetcher = PublishSubject<List<Project>>();
@@ -34,6 +36,7 @@ class ProjectsBloc {
   syncAllProjects(List<Project> data) async {
     var m = data.map((p) => p.projectId).toList();
     print('data from listen event: $m');
+    //print('data from listen event: $data');
   }
 
   fetchAllProjects() async {
@@ -74,5 +77,3 @@ class ProjectsBloc {
     _projectsFetcher.close();
   }
 }
-
-final bloc = ProjectsBloc();
