@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../../models/project_model.dart';
-import '../../blocs/projects_bloc.dart';
+import 'package:info_scanner_mobile/models/project_model.dart';
+import 'package:info_scanner_mobile/blocs/projects_bloc.dart';
 
 final DateFormat dateFormatter = new DateFormat('yyyy.MM.dd HH:mm:ss');
 

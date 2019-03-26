@@ -2,66 +2,86 @@ import 'dart:convert';
 import 'package:quiver/core.dart' as quiver;
 
 LoggedUserInfo loggedUserFromJson(String str) {
-    final jsonData = json.decode(str);
-    return LoggedUserInfo.fromMap(jsonData);
+  if (str == null)
+    return null;
+
+  final jsonData = json.decode(str);
+  return LoggedUserInfo.fromMap(jsonData);
 }
 
 String loggedUserToJson(LoggedUserInfo data) {
-    final dyn = data.toMap();
-    return json.encode(dyn);
+  final dyn = data.toMap();
+  return json.encode(dyn);
 }
 
 class LoggedUserInfo {
   int userId;
   String firstName;
   String lastName;
-  int beginDate;//UTC
-  int endDate;//UTC
+  String fullName;
   String email;
-  String password;
+  String token;
   String refreshToken;
+  String message;
+  List<dynamic> roles;
+
+  bool _inFetchState = false;
+  bool get inFetchState => _inFetchState;
+  set inFetchState(state) => _inFetchState = state;
 
   //constructor
   LoggedUserInfo({
     this.userId,
     this.firstName,
     this.lastName,
-    this.beginDate,
-    this.endDate,
+    this.fullName,
     this.email,
-    this.password,
     this.refreshToken,
+    this.token,
+    this.message,
+    this.roles,
   });
+
+  //constructor
+  LoggedUserInfo.inprogress() {
+    this.inFetchState = true;
+  }
+
+  //state
+  //userConnectState get state => _state;
+  //set state(state) => _state = state;
 
   factory LoggedUserInfo.fromMap(Map<String, dynamic> json) => new LoggedUserInfo(
       userId: json["user_id"],
       firstName: json["first_name"],
       lastName: json["last_name"],
-      beginDate: json["begin_date"],
-      endDate: json["end_date"],
+      fullName: json["full_name"],
       email: json["email"],
-      password: json["password"],
       refreshToken: json["refresh_token"],
+      token: json["token"],
+      message: json["message"],
+      roles: json["roles"],//(json["roles"] as List<dynamic>).cast<String>()//["roles"],
   );
 
   Map<String, dynamic> toMap() => {
     "user_id": userId,
     "first_name": firstName,
     "last_name": lastName,
-    "begin_date": beginDate,
-    "end_date": endDate,
+    "full_name": fullName,
     "email": email,
-    "password": password,
     "refresh_token": refreshToken,
+    "token": token,
+    "message": message,
+    "roles": roles,
+    //"in_fetch_state": inFetchState
   };
 
   bool operator == (o) =>
-    o is LoggedUserInfo 
-    && firstName == o.firstName
-    && lastName == o.lastName
+    o is LoggedUserInfo
+    && userId == o.userId
     && email == o.email;
 
-  int get hashCode => quiver.hash3(firstName.hashCode, lastName.hashCode, email.hashCode);
+  int get hashCode => quiver.hash2(userId.hashCode, email.hashCode);
 
   @override
   String toString() {
@@ -71,11 +91,13 @@ class LoggedUserInfo {
       userId: $userId,
       firstName: $firstName,
       lastName: $lastName,
-      beginDate: $beginDate,
-      endDate: $endDate,
+      fullName: $fullName,
       email: $email,
-      password: $password,
       refreshToken: $refreshToken,
+      token: $token,
+      message: $message,
+      roles: $roles,
+      inFetchState: $inFetchState
     )
     """;
   }

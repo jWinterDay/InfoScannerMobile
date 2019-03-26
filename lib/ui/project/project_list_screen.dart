@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../../models/project_model.dart';
-import '../../blocs/projects_bloc.dart';
-import '../../ui/project/project_edit_screen.dart';
+import 'package:info_scanner_mobile/models/project_model.dart';
+import 'package:info_scanner_mobile/blocs/projects_bloc.dart';
+import 'package:info_scanner_mobile/ui/project/project_edit_screen.dart';
 
 //final ProjectsBloc bloc = ProjectsBloc();//ProjectsBloc();
 
@@ -104,7 +104,6 @@ Widget buildList(AsyncSnapshot<List<Project>> snapshot, {@required ProjectsBloc 
   }
 
   return GridView.builder(
-    //scrollDirection: Axis.horizontal,
     itemCount: snapshot.data.length,
     gridDelegate: new SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 1, childAspectRatio: 5),
     itemBuilder: (BuildContext context, int index) {

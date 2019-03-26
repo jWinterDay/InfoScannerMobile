@@ -73,7 +73,8 @@ class ProjectsBloc {
     return await _projectRepository.isCanRemoveProject(project);
   }
 
-  dispose() {
+  dispose() async {
+    await _projectsFetcher.drain();
     _projectsFetcher.close();
   }
 }

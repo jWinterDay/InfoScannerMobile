@@ -9,7 +9,6 @@ import 'ui/project/project_list_screen.dart';
 import 'ui/home_screen.dart';
 import 'ui/palette/palette_list_screen.dart';
 import 'ui/auth/user_login_screen.dart';
-import 'ui/auth/user_register_screen.dart';
 
 
 void main() => runApp(App());
@@ -28,7 +27,6 @@ class App extends StatelessWidget {
         '/project': (context) => ProjectListScreen(),
         '/palette': (context) => PaletteListScreen(),
         '/user_login': (context) => UserLoginScreen(),
-        '/user_register': (context) => UserRegisterScreen(),
       },
       //home: Scaffold(
       //  body: HomeScreen()//ProjectListScreen()
