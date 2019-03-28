@@ -2,7 +2,7 @@ import 'package:rxdart/rxdart.dart';
 import 'package:collection/collection.dart';
 import 'dart:async';
 
-import '../resources/project_repository.dart';
+import '../resources/project/project_repository.dart';
 import '../models/project_model.dart';
 
 
@@ -34,8 +34,8 @@ class ProjectsBloc {
   }
 
   syncAllProjects(List<Project> data) async {
-    var m = data.map((p) => p.projectId).toList();
-    print('data from listen event: $m');
+    //var m = data.map((p) => p.projectId).toList();
+    //print('data from listen event: $m');
     //print('data from listen event: $data');
   }
 
@@ -66,6 +66,11 @@ class ProjectsBloc {
 
   restoreProject(Project project) async {
     await _projectRepository.restoreProject(project);
+    fetchAllProjects();
+  }
+
+  removeAllProjects() async {
+    await _projectRepository.removeAllProjects();
     fetchAllProjects();
   }
 

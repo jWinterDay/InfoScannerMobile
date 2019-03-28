@@ -5,15 +5,20 @@ import 'dart:convert';
 import 'package:quiver/core.dart' as quiver;
 //import 'package:intl/intl.dart';
 
+import 'package:info_scanner_mobile/resources/common.dart';
 
-Project projectFromJson(String str) {
-    final jsonData = json.decode(str);
-    return Project.fromMap(jsonData);
+Project projectFromJson(dynamic json) {
+  return Project.fromMap(json);
+}
+
+Project projectFromStr(String str) {
+  final jsonData = json.decode(str);
+  return Project.fromMap(jsonData);
 }
 
 String projectToJson(Project data) {
-    final dyn = data.toMap();
-    return json.encode(dyn);
+  final dyn = data.toMap();
+  return json.encode(dyn);
 }
 
 //final DateFormat dateFormatter = new DateFormat('yyyy.MM.dd HH:mm:ss');
@@ -21,49 +26,60 @@ String projectToJson(Project data) {
 class Project {
   int projectId;
   String name;
-  int beginDate;//UTC
-  int endDate;//UTC
+  int unixBeginDate;//UTC
+  int unixEndDate;//UTC
   String note;
   String projectGuid;
   String deviceGuid;
-  String syncDate;
+  int unixSyncDate;
   String syncDeviceGuid;
+  int isOwnProject;
+  String lastOperation;
 
   //constructor
   Project({
     this.projectId,
     this.name,
-    this.beginDate,
-    this.endDate,
+    this.unixBeginDate,
+    this.unixEndDate,
     this.note,
     this.projectGuid,
     this.deviceGuid,
-    this.syncDate,
-    this.syncDeviceGuid
+    this.unixSyncDate,
+    this.syncDeviceGuid,
+    this.isOwnProject,
+    this.lastOperation
   });
 
-  factory Project.fromMap(Map<String, dynamic> json) => new Project(
-      projectId: json["project_id"],
-      name: json["name"],
-      beginDate: json["begin_date"],//dateFormatter.parse(json["beginDate"]),
-      endDate: json["end_date"],//dateFormatter.parse(json["beginDate"]),
-      note: json["note"],
-      projectGuid: json["project_guid"],
-      deviceGuid: json["device_guid"],
-      syncDate: json["sync_date"],
-      syncDeviceGuid: json["sync_device_guid"],
-  );
+  factory Project.fromMap(Map<String, dynamic> json) {
+    return
+      new Project(
+        projectId: json["project_id"],
+        name: json["name"],
+        unixBeginDate: json["unix_begin_date"],
+        unixEndDate: json["unix_end_date"],
+        note: json["note"],
+        projectGuid: json["project_guid"],
+        deviceGuid: json["device_guid"],
+        unixSyncDate: json["unix_sync_date"],
+        syncDeviceGuid: json["sync_device_guid"],
+        isOwnProject: Common.boolToInt(json["is_own_project"]),
+        lastOperation: json["last_operation"],
+      );
+  }
 
   Map<String, dynamic> toMap() => {
     "project_id": projectId,
     "name": name,
-    "begin_date": beginDate,//dateFormatter.format(beginDate),
-    "end_date": endDate,//endDate == null ? null : dateFormatter.format(endDate),
+    "unix_begin_date": unixBeginDate,
+    "unix_end_date": unixEndDate,
     "note": note,
     "project_guid": projectGuid,
     "device_guid": deviceGuid,
-    "devicesync_date_guid": syncDate,
+    "unix_sync_date": unixSyncDate,
     "sync_device_guid": syncDeviceGuid,
+    "is_own_project": isOwnProject,
+    "last_operation": lastOperation,
   };
 
   bool operator == (o) => 
@@ -81,13 +97,15 @@ class Project {
     (
       projectId: $projectId,
       name: $name,
-      beginDate: $beginDate,
-      endDate: $endDate,
+      unixBeginDate: $unixBeginDate,
+      unixEndDate: $unixEndDate,
       note: $note,
       projectGuid: $projectGuid,
       deviceGuid: $deviceGuid,
-      syncDate: $syncDate,
-      syncDeviceGuid: $syncDeviceGuid
+      unixSyncDate: $unixSyncDate,
+      syncDeviceGuid: $syncDeviceGuid,
+      isOwnProject: $isOwnProject,
+      lastOperation: $lastOperation
     )
     """;
   }

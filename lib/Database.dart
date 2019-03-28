@@ -43,7 +43,7 @@ class DBProvider {
     try {
       sqlflite.Database db = await sqlflite.openDatabase(
         path,
-        version: 21,
+        version: 27,
         onCreate: _onCreate,
         onOpen: _onOpen,
         onUpgrade: _onUpgrade,
@@ -62,19 +62,30 @@ class DBProvider {
   _onCreate (sqlflite.Database db, int version) async {
     print('DATABASE. onCreate');
 
-    await db.execute(
-      """
-      create table project (
-        project_id integer primary key autoincrement,
-        name text not null,
-        note text,
-        begin_date integer not null,
-        end_date integer,
-        project_guid text not null default (hex(randomblob(16))),
-        device_guid text not null
-      )
-      """
-    );
+    await db.transaction((txn) async {
+      await db.execute(
+        """
+        create table project (
+          project_id integer primary key autoincrement,
+
+          name text not null,
+          note text,
+          is_own_project integer,
+
+          unix_begin_date integer not null,
+          unix_end_date integer,
+          unix_sync_date integer,
+          
+          project_guid text not null default (hex(randomblob(16))),
+          device_guid text not null,
+          last_operation text,
+          sync_device_guid text
+        )
+        """
+      );
+
+      await txn.execute('create unique index project_uk_guid on project (project_guid)');
+    });
   }
 
   _onUpgrade (sqlflite.Database db, int oldVersion, int newVersion) async {
@@ -84,7 +95,6 @@ class DBProvider {
       print('begin upgrade database....newV: $newVersion, oldV: $oldVersion');
 
       await db.transaction((txn) async {
-        await txn.execute('alter table project add column sync_date integer');
         await txn.execute('alter table project add column sync_device_guid text');
       });
     }

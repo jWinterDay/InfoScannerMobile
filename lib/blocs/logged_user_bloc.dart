@@ -1,5 +1,4 @@
 import 'package:rxdart/rxdart.dart';
-import 'package:collection/collection.dart';
 import 'dart:async';
 
 import 'package:info_scanner_mobile/resources/auth/auth_repository.dart';
@@ -15,11 +14,6 @@ class LoggedUserBloc {
 
   StreamSink<LoggedUserInfo> get inSink => _loggedUserFetcher.sink;
   Observable<LoggedUserInfo> get loggedUserStream => _loggedUserFetcher.stream;
-
-  //constructor
-  LoggedUserBloc() {
-   
-  }
 
   getInitial() {
     inSink.add(null);
@@ -46,7 +40,7 @@ class LoggedUserBloc {
 
   removeUser() async {
     await _loginRepository.removeUserLocal();
-    getUserLocal();
+    await getUserLocal();
   }
 
   dispose() async {

@@ -30,8 +30,8 @@ class _ProjectListState extends State<ProjectListScreen> {
     bloc.fetchAllProjects();
   }
 
-  void _openProjectSettings() {
-    
+  void _removeAllProjects() {
+    bloc.removeAllProjects();
   }
 
   @override
@@ -53,7 +53,7 @@ class _ProjectListState extends State<ProjectListScreen> {
         ),
         actions: <Widget>[
           IconButton(icon: Icon(Icons.sync), onPressed: _refreshProjects),
-          IconButton(icon: Icon(Icons.settings), onPressed: _openProjectSettings),
+          IconButton(icon: Icon(Icons.delete), onPressed: _removeAllProjects),
         ],
       ),
       body: StreamBuilder(
@@ -109,8 +109,8 @@ Widget buildList(AsyncSnapshot<List<Project>> snapshot, {@required ProjectsBloc 
     itemBuilder: (BuildContext context, int index) {
       Project project = snapshot.data[index];
       String beginDateStr;
-      if (project.beginDate != null) {
-        DateTime dt = DateTime.fromMillisecondsSinceEpoch(project.beginDate);
+      if (project.unixBeginDate != null) {
+        DateTime dt = DateTime.fromMillisecondsSinceEpoch(project.unixBeginDate);
         beginDateStr = dateFormatter.format(dt);
       }
 
@@ -179,7 +179,7 @@ Widget buildList(AsyncSnapshot<List<Project>> snapshot, {@required ProjectsBloc 
         },
         child: Container(
           //decoration: UnderlineTabIndicator(borderSide: BorderSide(), insets: EdgeInsets.all(5)),
-          decoration: project.endDate != null ? BoxDecoration(color: Colors.grey) : null,
+          decoration: project.unixEndDate != null ? BoxDecoration(color: Colors.grey) : null,
           child: ListTile(
             leading: Text(project.projectId.toString()),
             title: Text(project.name),

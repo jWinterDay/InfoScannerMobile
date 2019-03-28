@@ -30,11 +30,6 @@ String _passwordValidator(val) {
 class _UserLoginState extends State<UserLoginScreen> {
   final LoggedUserBloc bloc = new LoggedUserBloc();
 
-  //constructor
-  _UserLoginState() {
-    
-  }
-
   _onLogin() {
     final form = formKey.currentState;
     if (!form.validate()) {

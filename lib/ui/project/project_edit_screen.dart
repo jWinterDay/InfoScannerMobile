@@ -132,10 +132,10 @@ Widget _showBtnAction(Project project) {
 }
 
 Widget _showProjectBeginDate(Project project) {
-  if (project == null)
+  if (project == null || project.unixBeginDate == null)
     return Container(); 
 
-  DateTime dt = DateTime.fromMillisecondsSinceEpoch(project.beginDate);
+  DateTime dt = DateTime.fromMillisecondsSinceEpoch(project.unixBeginDate);
   String beginDateStr = dateFormatter.format(dt);
 
   return

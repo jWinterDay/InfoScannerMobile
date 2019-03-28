@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
 
-//import 'dart:async' as async;
-//import 'package:threading/threading.dart';
-//import 'dart:isolate';
-//import 'package:flutter/foundation.dart' as foundation;
+import 'package:flutter_stetho/flutter_stetho.dart';
 
 import 'ui/project/project_list_screen.dart';
 import 'ui/home_screen.dart';
 import 'ui/palette/palette_list_screen.dart';
 import 'ui/auth/user_login_screen.dart';
 
-
-void main() => runApp(App());
+void main() {
+  Stetho.initialize();
+  runApp(App());
+} 
 
 //root
 class App extends StatelessWidget {

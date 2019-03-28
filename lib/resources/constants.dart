@@ -1,4 +1,7 @@
 abstract class Constants {
+  //private constructor
+  Constants._yo();
+
   static final String prefUser = 'user';
 
   static final String prefUserUserId = 'user.user_id';

@@ -1,8 +1,10 @@
 import 'package:sqflite/sqflite.dart';
+import 'package:flutter/foundation.dart';
 
 import 'package:info_scanner_mobile/models/project_model.dart';
 import 'package:info_scanner_mobile/Database.dart';// as database;
 import 'package:device_id/device_id.dart';
+
 
 class ProjectDbApiProvider {
   String _deviceId = 'Unknown';
@@ -23,9 +25,10 @@ class ProjectDbApiProvider {
   Future<List<Project>> getProjects() async {
     Database db = await DBProvider.instance.database;
 
-    //var res = await db.query('project', where: 'end_date is null', orderBy: 'begin_date desc');
-    var res = await db.query('project', orderBy: 'begin_date desc');
+    var res = await db.query('project', orderBy: 'unix_begin_date desc, project_id desc');
     List<Project> list = res.isNotEmpty ? res.map((p) => Project.fromMap(p)).toList() : [];
+
+    //print('list = $list');
 
     return list;
   }
@@ -37,7 +40,7 @@ class ProjectDbApiProvider {
       """
       select count(1) as cnt
         from project
-       where end_date is null
+       where begin_end_date is null
       """
     );
 
@@ -47,26 +50,23 @@ class ProjectDbApiProvider {
   newProject(Project project) async {
     Database db = await DBProvider.instance.database;
 
-    int dt = project.beginDate ?? DateTime.now().millisecondsSinceEpoch;
+    int dt = project.unixBeginDate ?? DateTime.now().millisecondsSinceEpoch;
     String name = project.name;
-
-    //_deviceId = await DeviceId.getID;
-    //String deviceGuid = await DeviceId.getID;
 
     if (name == null) {
       int cnt = await getProjectCount();
       name = 'new project ($cnt)';
     }
 
-    int res = await db.rawInsert(
+    int lastId = await db.rawInsert(
       """
-      insert into project(name, note, begin_date, device_guid)
-      values(?, ?, ?, ?);
+      insert into project(name, note, unix_begin_date, device_guid, is_own_project, last_operation)
+      values(?, ?, ?, ?, 1, 'I');
       """,
       [name, project.note, dt, _deviceId]
     );
 
-    return res;
+    return lastId;
   }
 
   udpateProject(Project project) async {
@@ -77,10 +77,11 @@ class ProjectDbApiProvider {
       update project
           set name = ?,
               note = ?,
-              end_date = ?
+              unix_end_date = ?,
+              last_operation = 'U'
         where project_id = ?;
       """,
-      [project.name, project.note, project.endDate, project.projectId]
+      [project.name, project.note, project.unixEndDate, project.projectId]
     );
 
     return res;
@@ -93,7 +94,7 @@ class ProjectDbApiProvider {
     return await db.rawDelete(
       """
       update project
-         set end_date = ?
+         set unix_end_date = ?
         where project_id = ?;
       """,
       [endDate, project.projectId]
@@ -118,7 +119,7 @@ class ProjectDbApiProvider {
     return await db.rawDelete(
       """
       update project
-         set end_date = null
+         set unix_end_date = null
         where project_id = ?;
       """,
       [project.projectId]
@@ -136,7 +137,7 @@ class ProjectDbApiProvider {
   }
 
   Future<bool> isCanDeleteProject(Project project) async {
-    Database db = await DBProvider.instance.database;
+    //Database db = await DBProvider.instance.database;
 
     /*List<Map<String, dynamic>> res = await db.rawQuery(
       """
@@ -148,5 +149,63 @@ class ProjectDbApiProvider {
 
     //return res.first['cnt'];
     return true;
+  }
+
+  //===========sync===========
+  syncDelete({@required Project project, @required Transaction transaction}) async {
+    transaction.delete('project', where: 'project_guid', whereArgs: [project.projectGuid]);
+  }
+
+  Future<int> syncUpsert({@required Project project, @required Transaction transaction, @required String lastOp}) async {
+    int unixCurTime = DateTime.now().millisecondsSinceEpoch;
+    int lastId;
+
+    int updCount = await transaction.rawUpdate(
+      '''
+        update project
+           set name = ?,
+               note = ?,
+               unix_sync_date = ?,
+               is_own_project = ?,
+               last_operation = ?
+         where project_guid = ?
+      ''',
+      [
+        project.name,
+        project.note,
+        unixCurTime,
+        project.isOwnProject,
+        lastOp,
+        project.projectGuid
+      ]
+    );
+
+    if (updCount == 0) {
+      lastId = await transaction.rawInsert(
+        '''
+          insert into project(name, unix_begin_date, note,
+                              project_guid, device_guid, unix_sync_date,
+                              sync_device_guid, is_own_project, last_operation)
+          values (?, ?, ?,
+                  ?, ?, ?,
+                  ?, ?, ?)
+        ''',
+        [
+          project.name,
+          project.unixBeginDate * 1000,//on the server date presents as seconds
+          project.note,
+
+          project.projectGuid,
+          project.deviceGuid ?? 'Unknown device',
+          unixCurTime,
+
+          project.deviceGuid,
+          project.isOwnProject,
+          lastOp
+        ]
+      );
+    }
+
+    return lastId;
   }
 }

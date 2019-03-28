@@ -19,4 +19,6 @@ class ProjectRepository {
   restoreProject(Project project) => _projectProvider.restoreProject(project);
 
   Future<bool> isCanRemoveProject(Project project) => _projectProvider.isCanDeleteProject(project);
+
+  removeAllProjects() => _projectProvider.deleteAllProjects();
 }
