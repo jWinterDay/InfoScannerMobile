@@ -10,7 +10,7 @@ import 'ui/auth/user_login_screen.dart';
 void main() {
   Stetho.initialize();
   runApp(App());
-} 
+}
 
 //root
 class App extends StatelessWidget {

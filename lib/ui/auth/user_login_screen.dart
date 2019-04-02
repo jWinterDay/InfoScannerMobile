@@ -79,7 +79,7 @@ class _UserLoginState extends State<UserLoginScreen> {
             StreamBuilder(
               stream: bloc.loggedUserStream,
               builder: (context, AsyncSnapshot<LoggedUserInfo> snapshot) {
-                print('builder snapshot data: ${snapshot.data}');
+                //print('builder snapshot data: ${snapshot.data}');
 
                 if (snapshot.hasData) {
                   LoggedUserInfo user = snapshot.data;
@@ -107,7 +107,7 @@ class _UserLoginState extends State<UserLoginScreen> {
                   return Column(
                     children: <Widget>[
                       _submitBtn(context, onLogin: _onLogin),
-                      Text(snapshot.error.toString()),
+                      Text(snapshot.error.toString(), style: TextStyle(color: Colors.red, fontWeight: FontWeight.w800, ),),
                     ],
                   );
                 }

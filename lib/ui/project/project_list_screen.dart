@@ -26,12 +26,35 @@ class _ProjectListState extends State<ProjectListScreen> {
     );
   }
 
-  void _refreshProjects() {
+  void refreshProjects() {
     bloc.fetchAllProjects();
   }
 
-  void _removeAllProjects() {
-    bloc.removeAllProjects();
+  void removeAllProjects() {
+    showDialog(
+      context: this.context,
+      barrierDismissible: false,
+      builder: (p) => AlertDialog(
+        title: Text('Do you want delete all projects?'),
+        //content: Text(project.name),
+        actions: <Widget>[
+          //cancel
+          IconButton(
+            icon: Icon(Icons.arrow_back, color: Colors.blue),
+            onPressed: () { Navigator.of(this.context).pop(false); }
+          ),
+          //remove
+          IconButton(
+            icon: Icon(Icons.delete, color: Colors.blue),
+            onPressed: () { Navigator.of(this.context).pop(true); }
+          ),
+        ],
+      )
+    ).then((dialogResult) {
+      if (dialogResult) {
+        bloc.removeAllProjects();
+      }
+    });
   }
 
   @override
@@ -52,8 +75,8 @@ class _ProjectListState extends State<ProjectListScreen> {
           style: TextStyle(color: Colors.black),
         ),
         actions: <Widget>[
-          IconButton(icon: Icon(Icons.sync), onPressed: _refreshProjects),
-          IconButton(icon: Icon(Icons.delete), onPressed: _removeAllProjects),
+          IconButton(icon: Icon(Icons.sync), onPressed: refreshProjects),
+          IconButton(icon: Icon(Icons.delete), onPressed: removeAllProjects),
         ],
       ),
       body: StreamBuilder(
@@ -84,7 +107,7 @@ class _ProjectListState extends State<ProjectListScreen> {
 Widget buildList(AsyncSnapshot<List<Project>> snapshot, {@required ProjectsBloc bloc }) {
   final DateFormat dateFormatter = new DateFormat('yyyy.MM.dd HH:mm:ss');
 
-  void _editProject(BuildContext context, Project project) {
+  void editProject(BuildContext context, Project project) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (BuildContext context) {
@@ -195,7 +218,7 @@ Widget buildList(AsyncSnapshot<List<Project>> snapshot, {@required ProjectsBloc 
               value: project.endDate == null,
             ),*/
             onTap: ()  {
-              _editProject(context, project);
+              editProject(context, project);
               //print('tap'),
               //bloc.fetchAllProjects()
             },

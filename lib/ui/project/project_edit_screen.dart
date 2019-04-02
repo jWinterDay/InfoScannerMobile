@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
 import 'package:info_scanner_mobile/models/project_model.dart';
 import 'package:info_scanner_mobile/blocs/projects_bloc.dart';
+import 'package:info_scanner_mobile/resources/common.dart';
 
-final DateFormat dateFormatter = new DateFormat('yyyy.MM.dd HH:mm:ss');
 
 class ProjectEditScreen extends StatefulWidget {
   final Project project;
@@ -17,8 +16,8 @@ class ProjectEditScreen extends StatefulWidget {
   _ProjectEditState createState() => _ProjectEditState(project, bloc);
 }
 
-const int nameMinLen = 3;
-const int nameMaxLen = 15;
+const int nameMinLen = 1;
+const int nameMaxLen = 25;
 String nameValidator(String txt) {
   if (txt.length < nameMinLen || txt.length > nameMaxLen) {
     return 'Enter $nameMinLen - $nameMaxLen symbols';
@@ -33,10 +32,11 @@ class _ProjectEditState extends State<ProjectEditScreen> {
   static final GlobalKey<FormState> formKey = new GlobalKey<FormState>();
   final _nameController = TextEditingController();
   final _noteController = TextEditingController();
+  bool isAddInfoVisible = false;
 
   //constructor
   _ProjectEditState(this.project, this.bloc) {
-    _nameController.text = project?.name;
+    _nameController.text = project?.name ?? 'new project';
     _noteController.text = project?.note;
   }
 
@@ -46,63 +46,93 @@ class _ProjectEditState extends State<ProjectEditScreen> {
     //bloc.dispose();
   }
 
+  removeProjectCallback() {
+    showDialog(
+      context: this.context,
+      barrierDismissible: false,
+      builder: (p) => AlertDialog(
+        title: Text('Do you want delete this project?'),
+        content: Text(project.name),
+        actions: <Widget>[
+          //cancel
+          IconButton(
+            icon: Icon(Icons.arrow_back, color: Colors.blue),
+            onPressed: () { Navigator.of(this.context).pop(false); }
+          ),
+          //remove
+          IconButton(
+            icon: Icon(Icons.delete, color: Colors.blue),
+            onPressed: () { Navigator.of(this.context).pop(true); }
+          ),
+        ],
+      )
+    ).then((dialogResult) {
+      if (dialogResult) {
+        bloc.removeProject(project);
+        Navigator.pop(context);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
-
     return
       Scaffold(
         appBar: AppBar(
-          title: _showTitle(project),
+          title: showTitle(project),
+          actions: <Widget>[
+            IconButton(icon: Icon(Icons.delete), onPressed: removeProjectCallback),
+          ],
         ),
 
-        body: Padding(
-          padding: EdgeInsets.all(15),
-          child: Column(
-            children: <Widget>[
-              //project id
-              _showProjectId(project),
-              //begin date
-              _showProjectBeginDate(project),
-              Form(
-                key: formKey,
-                child: Column(
-                  children: <Widget>[
-                    //name
-                    TextFormField(
-                      controller: _nameController,
-                      style: Theme.of(context).textTheme.headline,
-                      decoration: InputDecoration(
-                        hintText: 'Name'
+        body: SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.all(15),
+            child: Column(
+              children: <Widget>[
+                Form(
+                  key: formKey,
+                  child: Column(
+                    children: <Widget>[
+                      //name
+                      TextFormField(
+                        controller: _nameController,
+                        style: Theme.of(context).textTheme.headline,
+                        decoration: InputDecoration(
+                          hintText: 'Name'
+                        ),
+                        validator: nameValidator,
                       ),
-                      validator: nameValidator,
-                    ),
-                    //note
-                    TextFormField(
-                      controller: _noteController,
-                      style: Theme.of(context).textTheme.headline,
-                      decoration: InputDecoration(
-                        hintText: 'Note'
+                      //note
+                      TextFormField(
+                        controller: _noteController,
+                        style: Theme.of(context).textTheme.headline,
+                        decoration: InputDecoration(
+                          hintText: 'Note'
+                        ),
+                        maxLines: 2,
                       ),
-                      maxLines: 2,
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
-              ),
-              //_showProjectBeginDate(project),
-              _showProjectGuid(project),
-            ],
-          ),
+                
+                Padding(padding: EdgeInsets.only(bottom: 20),),
+
+                showAddInfo(project)
+              ],
+            ),
+          )
         ),
-        
+
         floatingActionButton:
           FloatingActionButton(
-            child: _showBtnAction(project),
-            onPressed: _onSave,
+            child: showBtnAction(project),
+            onPressed: onSaveCallback,
         ),
       );
   }
 
-  _onSave() {
+  onSaveCallback() {
     final form = formKey.currentState;
     if (form.validate()) {
       String name = _nameController.text;
@@ -123,40 +153,28 @@ class _ProjectEditState extends State<ProjectEditScreen> {
   }
 }
 
-Widget _showTitle(Project project) {
+Widget showTitle(Project project) {
   return project == null ? Text('Add project') : Text('Edit project');
 }
 
-Widget _showBtnAction(Project project) {
+Widget showBtnAction(Project project) {
   return project == null ? Icon(Icons.add) : Icon(Icons.edit);
 }
 
-Widget _showProjectBeginDate(Project project) {
-  if (project == null || project.unixBeginDate == null)
-    return Container(); 
-
-  DateTime dt = DateTime.fromMillisecondsSinceEpoch(project.unixBeginDate);
-  String beginDateStr = dateFormatter.format(dt);
+Widget showProjectId(Project project) {
+  //if (project == null)
+  //  return Container();
+  String projectId = '';
+  if (project?.projectId != null) {
+    projectId = project.projectId.toString();
+  }
 
   return
-    Row(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: <Widget>[
-        Icon(Icons.date_range),
-        Text(
-          beginDateStr,
-          style: TextStyle(fontSize: 14)
-        )
-      ],
+    ListTile(
+      leading: Text('project id'),
+      title: Text(projectId, style: TextStyle(fontWeight: FontWeight.w600, fontSize: 12, color: Colors.blue,),),
     );
-}
-
-Widget _showProjectId(Project project) {
-  if (project == null)
-    return Container();
-
-  return
-    Row(
+    /*Row(
       mainAxisAlignment: MainAxisAlignment.center,
       children: <Widget>[
         Icon(Icons.vpn_key),
@@ -165,10 +183,10 @@ Widget _showProjectId(Project project) {
           style: TextStyle(fontSize: 14)
         )
       ],
-    );
+    );*/
 }
 
-Widget _showProjectGuid(Project project) {
+Widget showProjectGuid(Project project) {
   if (project == null)
     return Container();
 
@@ -181,6 +199,47 @@ Widget _showProjectGuid(Project project) {
             project.projectGuid,
             style: TextStyle(fontSize: 14)
           )
+      ),
+    );
+}
+
+Widget showAddInfo(Project project) {
+  if (project == null)
+    return Container();
+
+  TextStyle ts = TextStyle(fontWeight: FontWeight.w600, fontSize: 12, color: Colors.blue,);
+
+  return
+    Container(
+      color: Colors.grey[200],
+      child: Column(
+        children: <Widget>[
+          showProjectId(project),
+          ListTile(
+            leading: Text('begin date'),
+            title: Text(Common.unixDateToStr(project?.unixBeginDate), style: ts,),
+          ),
+          ListTile(
+            leading: Text('project guid'),
+            title: Text(project?.projectGuid??'', style: ts,),
+          ),
+          ListTile(
+            leading: Text('device guid'),
+            title: Text(project?.deviceGuid??'', style: ts,),
+          ),
+          ListTile(
+            leading: Text('own project'),
+            title: Text((project?.isOwnProject??'1').toString(), style: ts,),
+          ),
+          ListTile(
+            leading: Text('last operation'),
+            title: Text(project?.lastOperation??'', style: ts,),
+          ),
+          ListTile(
+            leading: Text('last change date'),
+            title: Text(Common.unixDateToStr(project?.unixLastChangeDate), style: ts,),
+          ),
+        ],
       ),
     );
 }

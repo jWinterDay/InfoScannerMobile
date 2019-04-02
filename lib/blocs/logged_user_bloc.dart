@@ -48,3 +48,6 @@ class LoggedUserBloc {
     _loggedUserFetcher.close();
   }
 }
+
+
+LoggedUserBloc gUserBloc = new LoggedUserBloc();

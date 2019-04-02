@@ -43,7 +43,7 @@ class DBProvider {
     try {
       sqlflite.Database db = await sqlflite.openDatabase(
         path,
-        version: 27,
+        version: 28,
         onCreate: _onCreate,
         onOpen: _onOpen,
         onUpgrade: _onUpgrade,
@@ -79,6 +79,7 @@ class DBProvider {
           project_guid text not null default (hex(randomblob(16))),
           device_guid text not null,
           last_operation text,
+          unix_last_change_date integer,
           sync_device_guid text
         )
         """
@@ -95,7 +96,7 @@ class DBProvider {
       print('begin upgrade database....newV: $newVersion, oldV: $oldVersion');
 
       await db.transaction((txn) async {
-        await txn.execute('alter table project add column sync_device_guid text');
+        await txn.execute('alter table project add column unix_last_change_date integer');
       });
     }
   }

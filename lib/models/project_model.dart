@@ -25,16 +25,21 @@ String projectToJson(Project data) {
 
 class Project {
   int projectId;
+
   String name;
+  String note;
+
   int unixBeginDate;//UTC
   int unixEndDate;//UTC
-  String note;
+  int isOwnProject;
+  
   String projectGuid;
   String deviceGuid;
   int unixSyncDate;
   String syncDeviceGuid;
-  int isOwnProject;
+  
   String lastOperation;
+  int unixLastChangeDate;
 
   //constructor
   Project({
@@ -48,7 +53,8 @@ class Project {
     this.unixSyncDate,
     this.syncDeviceGuid,
     this.isOwnProject,
-    this.lastOperation
+    this.lastOperation,
+    this.unixLastChangeDate
   });
 
   factory Project.fromMap(Map<String, dynamic> json) {
@@ -65,6 +71,7 @@ class Project {
         syncDeviceGuid: json["sync_device_guid"],
         isOwnProject: Common.boolToInt(json["is_own_project"]),
         lastOperation: json["last_operation"],
+        unixLastChangeDate: json["unix_last_change_date"],
       );
   }
 
@@ -80,6 +87,7 @@ class Project {
     "sync_device_guid": syncDeviceGuid,
     "is_own_project": isOwnProject,
     "last_operation": lastOperation,
+    "unix_last_change_date": unixLastChangeDate
   };
 
   bool operator == (o) => 
@@ -105,7 +113,8 @@ class Project {
       unixSyncDate: $unixSyncDate,
       syncDeviceGuid: $syncDeviceGuid,
       isOwnProject: $isOwnProject,
-      lastOperation: $lastOperation
+      lastOperation: $lastOperation,
+      unixLastChangeDate: $unixLastChangeDate
     )
     """;
   }

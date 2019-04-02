@@ -1,15 +1,36 @@
 import 'package:flutter/material.dart';
 import 'package:info_scanner_mobile/ui/left_panel_screen.dart';
+import 'package:info_scanner_mobile/blocs/logged_user_bloc.dart';//init gUserBloc for global detect
 
 class HomeScreen extends StatefulWidget {
   @override
   _HomeState createState() => _HomeState();
 }
 
-class _HomeState extends State<HomeScreen> {
+class _HomeState extends State<HomeScreen> with WidgetsBindingObserver {
+  /*AppLifecycleState _notification;
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    setState(() { _notification = state; });
+  }*/
+
   @override
   void dispose() {
     super.dispose();
+    gUserBloc.dispose();
   }
 
   @override

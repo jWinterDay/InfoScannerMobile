@@ -5,11 +5,10 @@ import 'package:info_scanner_mobile/blocs/logged_user_bloc.dart';
 
 import 'package:info_scanner_mobile/models/logged_user_info.dart';
 import 'package:info_scanner_mobile/models/sync_model.dart';
+import 'package:info_scanner_mobile/resources/Exceptions.dart';
 
-LoggedUserBloc userBloc = new LoggedUserBloc();
+//LoggedUserBloc userBloc = new LoggedUserBloc();//object in logged_user_bloc.dart
 SyncBloc syncBloc = new SyncBloc();
-
-typedef OnSyncCallback = void Function();
 
 class LeftPanelScreen extends StatefulWidget {
   @override
@@ -21,13 +20,13 @@ class _LeftPanelState extends State<LeftPanelScreen> {
   void dispose() {
     super.dispose();
 
-    userBloc.dispose();
+    //userBloc.dispose();
     syncBloc.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    userBloc.getUserLocal();
+    gUserBloc.getUserLocal();
 
     return Scaffold(
       appBar: AppBar(
@@ -41,7 +40,7 @@ class _LeftPanelState extends State<LeftPanelScreen> {
       ),
       body:
         StreamBuilder(
-          stream: userBloc.loggedUserStream,
+          stream: gUserBloc.loggedUserStream,
           builder: (context, AsyncSnapshot<LoggedUserInfo> snapshot) {
             LoggedUserInfo user = snapshot.data;
 
@@ -99,7 +98,7 @@ Widget loggedUserMenu({@required BuildContext context, @required LoggedUserInfo 
                 child: FlatButton.icon(
                   label: Text('Logout'),
                   icon: Icon(Icons.exit_to_app, color: Colors.blue,),
-                  onPressed: () { userBloc.removeUser(); },
+                  onPressed: () { gUserBloc.removeUser(); },
                 ),
               ),
               StreamBuilder(
@@ -115,7 +114,7 @@ Widget loggedUserMenu({@required BuildContext context, @required LoggedUserInfo 
     );
 }
 
-void onSync() {
+onSyncCallback() {
   if (syncBloc != null) {
     syncBloc.syncAll();
   }
@@ -130,6 +129,25 @@ Widget syncInfo({@required BuildContext context, @required AsyncSnapshot<SyncMod
     }
     return syncHasDataNotInProcess(context, syncModel);
   } else if (snapshot.hasError) {
+    //print('err==============${snapshot.error}');
+    //auth exception
+    if (snapshot.error is AuthException) {
+      return Column(
+        children: <Widget>[
+          //Navigator.pushNamed(context, '/login');
+          Text(snapshot.error.toString(), style: TextStyle(color: Colors.red, fontWeight: FontWeight.w800, ),),
+          FlatButton.icon(
+            icon: Icon(Icons.trending_up),
+            label: Text('press here for relogin', style: TextStyle(fontWeight: FontWeight.w600, ),),
+            onPressed: () {
+              gUserBloc.removeUser();
+              Navigator.pushNamed(context, '/user_login');
+            },
+          ),
+        ],
+      );
+    }
+
     return Column(
       children: <Widget>[
         syncBtn(context),
@@ -168,7 +186,7 @@ Widget syncBtn(BuildContext context, {bool isEnable = true}) {
         FlatButton.icon(
           label: Text('Sync projects'),
           icon: Icon(Icons.exit_to_app, color: Colors.blue,),
-          onPressed: isEnable ? onSync : null,
+          onPressed: isEnable ? onSyncCallback : null,
         ),
     );
 }

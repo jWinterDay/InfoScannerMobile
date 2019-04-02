@@ -71,6 +71,7 @@ class ProjectDbApiProvider {
 
   udpateProject(Project project) async {
     Database db = await DBProvider.instance.database;
+    int curDate = DateTime.now().millisecondsSinceEpoch;
 
     var res = await db.rawUpdate(
       """
@@ -78,10 +79,11 @@ class ProjectDbApiProvider {
           set name = ?,
               note = ?,
               unix_end_date = ?,
-              last_operation = 'U'
+              last_operation = 'U',
+              unix_last_change_date = ?
         where project_id = ?;
       """,
-      [project.name, project.note, project.unixEndDate, project.projectId]
+      [project.name, project.note, project.unixEndDate, curDate, project.projectId]
     );
 
     return res;
@@ -152,8 +154,68 @@ class ProjectDbApiProvider {
   }
 
   //===========sync===========
-  syncDelete({@required Project project, @required Transaction transaction}) async {
-    transaction.delete('project', where: 'project_guid', whereArgs: [project.projectGuid]);
+  Future<int> syncDelete({@required Project project, @required Transaction transaction}) async {
+    return transaction.delete('project', where: 'project_guid', whereArgs: [project.projectGuid]);
+  }
+
+  Future<int> syncInsert({@required Project project, @required Transaction transaction}) async {
+    int unixCurTime = DateTime.now().millisecondsSinceEpoch;
+    
+    int lastId = await transaction.rawInsert(
+      '''
+        insert into project(name, unix_begin_date, note,
+                            project_guid, device_guid, unix_sync_date,
+                            sync_device_guid, is_own_project, last_operation)
+        select ?, ?, ?,
+               ?, ?, ?,
+               ?, ?, ?
+         where not exists(select 1 from project where project_guid = ?)
+      ''',
+
+      //where not exists(select 1 from project where project_guid = ?)
+      [
+        project.name,
+        project.unixBeginDate * 1000,//on the server date presents as seconds
+        project.note,
+
+        project.projectGuid,
+        project.deviceGuid ?? 'Unknown device',
+        unixCurTime,
+
+        project.deviceGuid,
+        project.isOwnProject,
+        'I',
+        project.projectGuid,
+      ]
+    );
+
+    return lastId;
+  }
+
+  Future<int> syncUpdate({@required Project project, @required Transaction transaction}) async {
+    int unixCurTime = DateTime.now().millisecondsSinceEpoch;
+    
+    return await transaction.rawUpdate(
+      '''
+        update project
+           set name = ?,
+               note = ?,
+               unix_sync_date = ?,
+               is_own_project = ?,
+               last_operation = ?,
+               unix_last_change_date = ?
+         where project_guid = ?
+      ''',
+      [
+        project.name,
+        project.note,
+        unixCurTime,
+        project.isOwnProject,
+        'U',
+        unixCurTime,
+        project.projectGuid
+      ]
+    );
   }
 
   Future<int> syncUpsert({@required Project project, @required Transaction transaction, @required String lastOp}) async {

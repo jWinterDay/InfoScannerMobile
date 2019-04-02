@@ -2,6 +2,8 @@ import 'package:rxdart/rxdart.dart';
 import 'dart:async';
 import 'package:info_scanner_mobile/resources/sync/sync_repositiry.dart';
 import 'package:info_scanner_mobile/models/sync_model.dart';
+import 'package:info_scanner_mobile/resources/Exceptions.dart';
+import 'package:info_scanner_mobile/blocs/logged_user_bloc.dart';//for use gUserBloc
 
 class SyncBloc {
   final _syncRepository = SyncRepository();
@@ -22,9 +24,14 @@ class SyncBloc {
 
     try {
       syncModel = await _syncRepository.syncAll();
-      await Future.delayed(Duration(seconds: 2));//TODO test
+      //await Future.delayed(Duration(seconds: 2));//TODO test
       inSink.add(syncModel);
+    } on AuthException catch(err) {
+      //gUserBloc.removeUser();
+      //print('AuthException. err = $err');
+      inSink.addError(err);
     } catch(err) {
+      //print('sync error: $err');
       inSink.addError(err);
     }
   }

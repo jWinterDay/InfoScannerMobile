@@ -1,15 +1,29 @@
 import 'dart:convert' show base64, json;
+import 'package:intl/intl.dart';
 
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'package:info_scanner_mobile/models/logged_user_info.dart';
 import 'package:info_scanner_mobile/resources/constants.dart';
+import 'Exceptions.dart';
 
 final String loginUrl = 'http://192.168.1.42:3001/auth/ajax/login';
 final String refreshTokenUrl = 'http://192.168.1.42:3001/auth/ajax/refreshtoken';
 
 class Common {
+  static final DateFormat dateFormatter = new DateFormat('yyyy.MM.dd HH:mm:ss');
+
+  static String unixDateToStr(val) {
+    if (val == null) {
+      return '';
+    }
+
+    DateTime dt = DateTime.fromMillisecondsSinceEpoch(val);
+    String str = dateFormatter.format(dt);
+
+    return str;
+  }
   static boolToInt(dynamic val) {
     var t = val.runtimeType;
 
@@ -49,12 +63,12 @@ class Common {
 
   getPayloadJSON(String token) {
     if (token == null) {
-      throw Exception('Token is null');
+      throw AuthException('Token is null', 401);
     }
 
     List<String> segments = token.split('.');
     if (segments.length != 3) {
-      throw Exception('Not enough or too many segments');
+      throw AuthException('Not enough or too many segments', 401);
     }
 
     String base64Url = token.split('.')[1];
@@ -103,8 +117,7 @@ class Common {
     if (user != null && user.token != null) {
       var payload = getPayloadJSON(user.token);
       if (payload == null || payload['exp'] == null) {
-        await removeUserLocal();
-        throw Exception('Empty token info');
+        throw AuthException('Empty token info', 401);
       }
 
       int expUnixTimeMs = (payload['exp'] * 1000).round();//jsonwebtoken presents expire date as seconds
@@ -113,9 +126,14 @@ class Common {
       if (curUnixTimeMs > expUnixTimeMs) {
         //try get token by refresh token
         var rtResponse = await _httpRefreshToken();
+        
         if (rtResponse.statusCode == 200) {
           final responseJson = json.decode(rtResponse.body);
           await saveTokenLocal(responseJson);
+        }
+
+        if (rtResponse.statusCode == 401) {
+          throw AuthException('Invalid refresh token info', 401);
         }
       }
 
@@ -130,19 +148,12 @@ class Common {
       headers: headers
     )
     .timeout(duration, onTimeout: () {
-      throw 'Timeout exception';
+      throw AuthException('Timeout exception', 500);
     });
 
-    //
-    if (response.statusCode == 200) {
-      print('ok. 200');
-    }
-
-    if (response.statusCode == 401) {
-      print('401');
-    }
-
     return response;
+
+    //throw Exception('Empty user');
   }
 
   Future<http.Response> _httpRefreshToken({Duration duration = const Duration(seconds: 5)}) async {
@@ -151,16 +162,14 @@ class Common {
     if (user != null && user.refreshToken != null) {
       var payload = getPayloadJSON(user.refreshToken);
       if (payload == null || payload['exp'] == null) {
-        await removeUserLocal();
-        throw Exception('Empty refresh token info');
+        throw AuthException('Empty refresh token info', 401);
       }
 
       int expUnixTimeMs = (payload['exp'] * 1000).round();//jsonwebtoken presents expire date as seconds
       int curUnixTimeMs = DateTime.now().millisecondsSinceEpoch;
 
       if (curUnixTimeMs > expUnixTimeMs) {
-        await removeUserLocal();
-        throw Exception('Invalid refresh token');
+        throw AuthException('Invalid refresh token', 401);
       }
 
       Map<String, String> headers = new Map();
@@ -171,16 +180,12 @@ class Common {
         headers: headers
       )
       .timeout(duration, onTimeout: () {
-        throw 'Timeout exception';
+        throw AuthException('Timeout exception', 401);
       });
-
-      if (response.statusCode == 401) {
-        throw Exception('Invalid refresh token info');
-      }
 
       return response;
     }
 
-    throw Exception('Invalid refresh token info');
+    throw AuthException('Invalid refresh token info', 401);
   }
 }

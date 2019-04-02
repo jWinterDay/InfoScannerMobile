@@ -22,9 +22,14 @@ class LoggedUserInfo {
   String email;
   String token;
   String refreshToken;
-  String message;
+  //String message;
   List<dynamic> roles;
 
+  Exception _exception;
+  Exception get exception => _exception;
+  set exception(exc) => _exception = exc;
+
+  
   bool _inFetchState = false;
   bool get inFetchState => _inFetchState;
   set inFetchState(state) => _inFetchState = state;
@@ -38,7 +43,7 @@ class LoggedUserInfo {
     this.email,
     this.refreshToken,
     this.token,
-    this.message,
+    //this.message,
     this.roles,
   });
 
@@ -59,7 +64,7 @@ class LoggedUserInfo {
       email: json["email"],
       refreshToken: json["refresh_token"],
       token: json["token"],
-      message: json["message"],
+      //message: json["message"],
       roles: json["roles"],//(json["roles"] as List<dynamic>).cast<String>()//["roles"],
   );
 
@@ -71,7 +76,7 @@ class LoggedUserInfo {
     "email": email,
     "refresh_token": refreshToken,
     "token": token,
-    "message": message,
+    //"message": message,
     "roles": roles,
     //"in_fetch_state": inFetchState
   };
@@ -95,7 +100,6 @@ class LoggedUserInfo {
       email: $email,
       refreshToken: $refreshToken,
       token: $token,
-      message: $message,
       roles: $roles,
       inFetchState: $inFetchState
     )
