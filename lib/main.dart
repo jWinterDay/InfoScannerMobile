@@ -8,7 +8,7 @@ import 'ui/palette/palette_list_screen.dart';
 import 'ui/auth/user_login_screen.dart';
 
 void main() {
-  Stetho.initialize();
+  //Stetho.initialize();
   runApp(App());
 }
 

@@ -43,7 +43,10 @@ class _ProjectEditState extends State<ProjectEditScreen> {
   @override
   void dispose() {
     super.dispose();
+    _nameController.dispose();
+    _noteController.dispose();
     //bloc.dispose();
+
   }
 
   removeProjectCallback() {
@@ -229,7 +232,7 @@ Widget showAddInfo(Project project) {
           ),
           ListTile(
             leading: Text('own project'),
-            title: Text((project?.isOwnProject??'1').toString(), style: ts,),
+            title: Text((project?.isOwnProject??1).toString(), style: ts,),
           ),
           ListTile(
             leading: Text('last operation'),

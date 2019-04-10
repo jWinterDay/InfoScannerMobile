@@ -26,12 +26,8 @@ class SyncApiProvider {
       List<Project> projectList = new List();
       projectList = projectsJSON.map((p) => projectFromJson(p)).toList();
 
-      //print('projectList: $projectList');
-
       //synchronize with local database storage
-      return await syncWithLocal(projectList);
-
-      //return syncModel.message;//  new SyncModel(message: 'received ${projectList.length} projects from server');
+      return await _syncWithLocal(projectList);
     }
     
     throw '${response.statusCode} ${response.body}';
@@ -57,7 +53,7 @@ class SyncApiProvider {
     return null;
   }
 
-  Future<SyncModel> syncWithLocal(List<Project> projects) async {
+  Future<SyncModel> _syncWithLocal(List<Project> projects) async {
     Database db = await DBProvider.instance.database;
 
     int delCnt = 0;
@@ -83,12 +79,7 @@ class SyncApiProvider {
       await batch.commit(continueOnError: true, noResult: true);
     });
 
-    res = '''
-      synchronized projects\n
-        deleted: $delCnt
-        updated: $updCnt
-        inserted: $insCnt
-    ''';
+    res = 'projects(D: $delCnt, I: $insCnt, U: $updCnt)';
 
     return new SyncModel(message: res);
   }
