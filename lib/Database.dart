@@ -43,7 +43,7 @@ class DBProvider {
     try {
       sqlflite.Database db = await sqlflite.openDatabase(
         path,
-        version: 42,
+        version: 52,
         onCreate: _onCreate,
         onOpen: _onOpen,
         onUpgrade: _onUpgrade,
@@ -65,18 +65,11 @@ class DBProvider {
     if (newVersion > oldVersion) {
       print('begin upgrade database....newV: $newVersion, oldV: $oldVersion');
 
-      await db.transaction((txn) async {
-        var batch = txn.batch();
-
-        //insert into diy_resource (name, color, no, lab, hsl) values ('Gray Green Dark', '{"B": 127, "G": 127, "R": 101}', '3768', '{"A": -9.30291, "B": -3.09718, "L": 51.2415}', '{"H": 180, "L": 44.7058826684952, "S": 11.4035077393055}');
-        await db.execute(
-          """
-          
-          """
-        );
-
-        await batch.commit(continueOnError: true, noResult: true);
-      });
+      await db.execute(
+        """
+        
+        """
+      );
     }
   }
 
@@ -86,7 +79,6 @@ class DBProvider {
     //project
     await db.execute(
       """
-      --project
       create table project (
         project_id integer primary key autoincrement,
 
@@ -104,10 +96,17 @@ class DBProvider {
         unix_last_change_date integer,
         sync_device_guid text
       );
-
+      """
+    );
+    await db.execute(
+      """
       create unique index project_uk_guid on project (project_guid);
+      """
+    );
 
-      --diy_resource
+    //diy_resource
+    await db.execute(
+      """
       create table diy_resource (
         diy_resource_id integer primary key autoincrement,
         name text not null,
@@ -116,10 +115,48 @@ class DBProvider {
         lab text,
         hsl text
       );
-
+      """
+    );
+    await db.execute(
+      """
       create index diy_resource_no_idx on diy_resource (no);
-      
-      --diy resource data
+      """
+    );
+
+    //amount_type
+    await db.execute(
+      """
+      create table amount_type (
+        amount_type_id integer primary key,
+        name text,
+        note text
+      );
+      """
+    );
+    await db.execute(
+      """
+      insert into amount_type(amount_type_id, name)
+      values (1, 'empty'),
+             (2, '50%'),
+             (3, '100%');
+      """
+    );
+
+    //users_diy_resource
+    await db.execute(
+      """
+      create table users_diy_resource (
+        users_diy_resource_id integer primary key autoincrement,
+        amount_type_id integer references amount_type (amount_type_id),
+        user_id integer,
+        diy_resource_id integer references diy_resource (diy_resource_id) 
+      );
+      """
+    );
+
+    //diy_resource data
+    await db.execute(
+      """
       insert into diy_resource (name, color, no, lab, hsl)
       values ('Gray Green Dark', '{"B": 127, "G": 127, "R": 101}', '3768', '{"A": -9.30291, "B": -3.09718, "L": 51.2415}', '{"H": 180, "L": 44.7058826684952, "S": 11.4035077393055}')
             ,('Gray Green Vy Dark', '{"B": 106, "G": 106, "R": 86}', '924', '{"A": -7.43026, "B": -2.48761, "L": 43.252}', '{"H": 180, "L": 37.6470595598221, "S": 10.4166656732559}')

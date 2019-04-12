@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+
 import 'package:info_scanner_mobile/ui/left_panel_screen.dart';
 import 'package:info_scanner_mobile/blocs/logged_user_bloc.dart';//init gUserBloc for global detect
 
@@ -8,6 +9,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeState extends State<HomeScreen> with WidgetsBindingObserver {
+  String barcode = '';
   /*AppLifecycleState _notification;
 
   @override
@@ -64,7 +66,7 @@ class _HomeState extends State<HomeScreen> with WidgetsBindingObserver {
                 icon: Icon(Icons.color_lens),
                 onPressed: () => { Navigator.pushNamed(context, '/palette') },
               )
-            )
+            ),
           ],
         )
       )
