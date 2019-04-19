@@ -13,12 +13,14 @@ class DiyResourceDbApiProvider {
     
   }
 
-  Future<List<DiyResource>> getDiyResources({int offset, int limit, String filter = ''}) async {
+  Future<List<DiyResource>> getDiyResources({int offset=0, int limit, String filter = ''}) async {
     //check for injection
     RegExp reg = RegExp(r"^(\w{0,5})$", caseSensitive: false);
-    if(!reg.hasMatch(filter)) {
+    if(!reg.hasMatch(filter??'')) {
       return [];
     }
+
+    print('limit = $limit, offset = $offset');
 
     Database db = await DBProvider.instance.database;
 
@@ -36,10 +38,6 @@ class DiyResourceDbApiProvider {
              amount_type_note,
              in_my_palette               
         from (select dr.*,
-                     case
-                       when dr.no regexp '([[:digit:]])+' then 1
-                       else 0
-                     end as is_number,
                      udr.amount_type_id,
                      udr.users_diy_resource_id,
                      case
@@ -51,12 +49,13 @@ class DiyResourceDbApiProvider {
                 from diy_resource dr
                 left join users_diy_resource udr on udr.diy_resource_id = dr.diy_resource_id
                 left join amount_type at on at.amount_type_id = udr.amount_type_id
-               where dr.no like '%$filter%') q
-       order by --in_my_palette desc,
-                case
-                  when q.is_number = 1 then cast(q.no as int)
-                  else -1
-                end
+               where dr.no like '%$filter%'
+               order by case
+                          when dr.no regexp '([[:digit:]])+' then 1
+                          else 0
+                        end
+               limit ${limit??1000} offset ${offset??0}
+               ) q
       ''';
     var res = await db.rawQuery(sql);
     List<DiyResource> list = res.isNotEmpty ? res.map((p) => DiyResource.fromJson(p)).toList() : [];

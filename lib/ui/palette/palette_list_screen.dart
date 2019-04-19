@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'dart:math' as math;
+import 'package:tuple/tuple.dart';
 import 'dart:core';
 import 'dart:ui';
 import 'dart:convert';
@@ -14,33 +14,69 @@ class PaletteListScreen extends StatefulWidget {
 
 class _PaletteListState extends State<PaletteListScreen> {
   final DiyResourceBloc bloc = DiyResourceBloc();
-  TextEditingController searchController = new TextEditingController();
-  List<DiyResource> initData;
-  
-  ScrollController scrollController;
-  int _rowsPerPage = 10;
-  int _nextLoadCount = 0;
+  TextEditingController _searchController = new TextEditingController();
+  //List<DiyResource> _initData;
+  DiyResourceListState _initData;
+
+  static const int LIMIT_PER_PAGE = 10;
+  ScrollController _scrollController;
+  //bool _isAvailableLoadMore = true;
 
   //constructor
   _PaletteListState() {
-    scrollController = new ScrollController();
-    searchController.text = '';
-    setInitData();
+    _scrollController = new ScrollController();
+    _searchController.text = '';
+    _setInitData();
+
+    //when controller is changed, reinitialize offset
+    //_searchController.addListener(() {
+    //  _isAvailableLoadMore = true;
+    //});
+
+    /*bloc.allDiyResourcesStream.listen((data) {
+      _isAvailableLoadMore = true;
+    });*/
+    //bloc.loadMoreController.stream.listen((data) {
+    //  _isAvailableLoadMore = true;
+    //});
   }
 
-  setInitData() async {
-    initData = await bloc.fetchAllDiyResources(offset: 0, limit: _rowsPerPage);
+  _setInitData() async {
+    _initData = await bloc.initData();
+    //_initData = await bloc.fetchAllDiyResources(offset: _offset, limit: _limit);
   }
 
-  searchPalette() {
-    bloc.fetchAllDiyResources(offset: _rowsPerPage * _nextLoadCount, limit: _rowsPerPage, filter: searchController.text);
+  _searchPalette() {
+    //bloc.fetchAllDiyResources(filter: _searchController.text);
+  }
+
+  _loadMore() {
+    print('I want to get more');
+    bloc.loadMoreResultData(filter: _searchController.text);
+    //_limit += LIMIT_PER_PAGE;
+    //_offset += LIMIT_PER_PAGE;
+    //bloc.fetchAllDiyResources(limit: _limit, offset: _offset);//, limit: LIMIT_PER_PAGE);//, limit: _limit);
+    //_isAvailableLoadMore = true;
+  }
+
+  _setInMyPalette(BuildContext context, DiyResource diyResource, bool val) {
+    bloc.setInMyPalette(diyResource.diyResourceId, val: val, filter: _searchController.text);
+    Scaffold
+      .of(context)
+      .showSnackBar(
+        SnackBar(
+          duration: Duration(seconds: 2),
+          content: Text('${diyResource.name}'),
+        )
+      );
   }
 
   @override
   void dispose() {
     super.dispose();
-    searchController.dispose();
+    _searchController.dispose();
     bloc.dispose();
+    //_searchController.removeListener(() { });
   }
 
   @override
@@ -58,7 +94,7 @@ class _PaletteListState extends State<PaletteListScreen> {
           Padding(
             padding: EdgeInsets.all(16),
             child: TextField(
-              controller: searchController,
+              controller: _searchController,
               decoration: InputDecoration(
                 hintText: 'Search',
                 contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
@@ -71,16 +107,20 @@ class _PaletteListState extends State<PaletteListScreen> {
               keyboardType: TextInputType.text,
               textInputAction: TextInputAction.done,
               onChanged: (val) {
-                searchPalette();
+                _searchPalette();
               }
             ),
           ),
 
           //list
           StreamBuilder(
-            initialData: initData,
-            stream: bloc.allDiyResourcesStream,
-            builder: (context, AsyncSnapshot<List<DiyResource>> snapshot) {
+            initialData: _initData,
+            //stream: bloc.allDiyResourcesStream,
+            stream: bloc.listStream,//bloc.initStream,// resultStream,
+            //builder: (context, AsyncSnapshot<List<DiyResource>> snapshot) {
+            builder: (context, AsyncSnapshot<DiyResourceListState> snapshot) {
+              //print('snapshot = ${snapshot.data}');
+
               if (snapshot.hasData) {
                 return Expanded(
                   child: buildList(snapshot)
@@ -101,8 +141,8 @@ class _PaletteListState extends State<PaletteListScreen> {
     );
   }
 
-  Widget buildList(AsyncSnapshot<List<DiyResource>> snapshot) {
-    if (snapshot.data.isEmpty) {
+  Widget buildList(AsyncSnapshot<DiyResourceListState> snapshot) {
+    if (snapshot.data.list != null && snapshot.data.list.isEmpty) {
       return Center(
         child: Text(
           'No data',
@@ -114,16 +154,117 @@ class _PaletteListState extends State<PaletteListScreen> {
     return NotificationListener<ScrollNotification>(
       onNotification: (ScrollNotification notification) {
         if (notification is ScrollEndNotification) {
-          if (scrollController.position.extentAfter == 0) {
-            print('go load');
-            //loadMore();
+          if (_scrollController.position.extentAfter == 0) {
+            _loadMore();
           }
         }
         return false;
       },
-      child: GridView.builder(
-        controller: scrollController,
-        itemCount: 20,//snapshot.data.length,
+      child: ListView.separated(
+        //physics: AlwaysScrollableScrollPhysics(),
+        controller: _scrollController,
+        itemCount: snapshot.data.list == null ? 0 : snapshot.data.list.length + 1,
+        separatorBuilder: (BuildContext context, int index) => Divider(),
+        itemBuilder: (BuildContext context, int index) {
+          final isLoading = snapshot.data.isLoading;
+
+          //list
+          if (index < snapshot.data.list.length) {
+            DiyResource diyResource = snapshot.data.list[index];
+            String color = diyResource.color;
+            Map<String, dynamic> colorJSON = json.decode(color);
+
+            return Container(
+              decoration: BoxDecoration(
+                border: Border(bottom: BorderSide(color: Colors.grey[300])),
+                color: diyResource.inMyPalette ? Colors.green[100] : null
+              ),
+              child: ListTile(
+                leading: Checkbox(
+                  onChanged: (val) {
+                    _setInMyPalette(context, diyResource, val);
+                  },
+                  value: diyResource.inMyPalette,
+                ),
+                title: Text('$index ] ${diyResource.no}', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20),),
+                subtitle: Text(diyResource.name),
+                trailing: Container(
+                  decoration: BoxDecoration(
+                    border: Border.all(color: Colors.black),
+                    color: Color.fromARGB(255, colorJSON['R'], colorJSON['G'], colorJSON['B']),
+                  ),
+                  height: 30,
+                  width: 70,
+                ),
+                onTap: ()  { },
+              ),
+            );
+          }
+
+          //error
+          /*if (snapshot.error != null) {
+            return ListTile(
+              title: Text(
+                'Error while loading data...',
+                style: Theme.of(context).textTheme.body1.copyWith(fontSize: 16.0),
+              ),
+              isThreeLine: false,
+              leading: CircleAvatar(
+                child: Text(snapshot.error),
+                foregroundColor: Colors.white,
+                backgroundColor: Colors.redAccent,
+              ),
+            );
+          }*/
+
+          //load more
+          return Container(
+            decoration: BoxDecoration(
+              border: Border(top: BorderSide(color: Colors.red)),
+              color: Colors.grey[300]
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(1.0),
+              child: loadMore(context, isLoading, snapshot.data.error), 
+            )
+          );
+          //return loadMore(context, isLoading);
+        },
+      )
+      
+    );
+  }
+
+  Widget loadMore(BuildContext context, bool isLoading, Object error) {
+    if (isLoading) {
+      return Center(
+        child: Opacity(
+          opacity: 1,
+          child: CircularProgressIndicator(strokeWidth: 2.0,),
+        ),
+      );
+    }
+
+    Widget errInfo = (error == null) ? Container() : Text(error.toString(), style: TextStyle(color: Colors.red, fontWeight: FontWeight.w600),);
+
+    return Center(
+      child: Column(
+        children: <Widget>[
+          errInfo,
+          FlatButton.icon(
+            label: Text('Load more', style: TextStyle(color: Colors.blue),),
+            icon: Icon(Icons.get_app),
+            onPressed: () => { _loadMore() },
+          )
+        ],
+      )
+    );
+  }
+}
+
+/*child: GridView.builder(
+        controller: _scrollController,
+        itemCount: snapshot.data.length,
         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 1, childAspectRatio: 7),
         itemBuilder: (BuildContext context, int index) {
           DiyResource diyResource = snapshot.data[index];
@@ -139,11 +280,11 @@ class _PaletteListState extends State<PaletteListScreen> {
             child: ListTile(
               leading: Checkbox(
                 onChanged: (val) {
-                  bloc.setInMyPalette(diyResource.diyResourceId, val: val, filter: searchController.text);
+                  _setInMyPalette(context, diyResource, val);
                 },
                 value: diyResource.inMyPalette,
               ),
-              title: Text(diyResource.no, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20),),
+              title: Text('$index ] ${diyResource.no}', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20),),
               subtitle: Text(diyResource.name),
               trailing: Container(
                 decoration: BoxDecoration(
@@ -156,10 +297,7 @@ class _PaletteListState extends State<PaletteListScreen> {
               onTap: ()  { },
             ),
           );
-      })
-    );
-  }
-}
+      })*/
 
 /*return ListView(
       controller: scrollController,

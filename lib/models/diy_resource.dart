@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:flutter/foundation.dart';
 import 'package:info_scanner_mobile/resources/common.dart';
 
 DiyResource diyResourceFromJson(String str) {
@@ -9,6 +10,57 @@ DiyResource diyResourceFromJson(String str) {
 String diyResourceToJson(DiyResource data) {
   final dyn = data.toJson();
   return json.encode(dyn);
+}
+
+class DiyResourceListState {
+  List<DiyResource> list;
+  bool isLoading;
+  Object error;
+
+  DiyResourceListState extendWith(DiyResourceListState nextState) {
+    if (nextState == null) {
+      return null;
+    }
+
+    this.isLoading = nextState?.isLoading;
+    this.error = nextState?.error;
+
+    if (nextState.list == null) {
+      return this;
+    }
+    if (this.list == null) {
+      this.list = nextState.list;
+    }
+
+    this.list.addAll(nextState.list);
+
+    return this;
+  }
+
+  //constructor
+  DiyResourceListState({
+    @required this.list,
+    @required this.isLoading,
+    @required this.error,
+  });
+
+  factory DiyResourceListState.initial() => DiyResourceListState(
+    isLoading: false,
+    list: <DiyResource>[],
+    error: null,
+  );
+
+  @override
+  String toString() {
+    return
+    """
+    (
+      isLoading: $isLoading,
+      error: $error,
+      list: $list
+    )
+    """;
+  }
 }
 
 class DiyResource {
@@ -54,15 +106,7 @@ class DiyResource {
   String toString() {
     return
     """
-    (
-      diyResourceId: $diyResourceId,
-      name: $name,
-      no: $no,
-      color: $color,
-      hsl: $hsl,
-      lab: $lab,
-      inMyPalette: $inMyPalette
-    )
+    (no: $no)
     """;
   }
 }
