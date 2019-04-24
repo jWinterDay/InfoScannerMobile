@@ -9,86 +9,139 @@ import 'package:info_scanner_mobile/models/diy_resource.dart';
 
 
 class DiyResourceBloc {
-  int get limit => 10;
-
+  int _limit = 10;
   int _offset = 0;
-  int get offset => _offset;
-  set offset(offset) => _offset = offset;
 
-  final _diyResourceRepository = DiyResourceRepository();
+  final DiyResourceRepository _diyResourceRepository = DiyResourceRepository();
 
-  DiyResourceListState _state = new DiyResourceListState.initial();
-  PublishSubject<DiyResourceListState> _loadFirstPageController;
+  PublishSubject<String> _searchController;
+  ValueConnectableObservable<String> _searchValObservable;
+
+  PublishSubject<DiyResourceListState> _initController;
   PublishSubject<DiyResourceListState> _loadMoreController;
+  PublishSubject<DiyResourceListState> _refreshController;
+  PublishSubject<DiyResourceListState> _loadAllController;//if we loaded all data
+  PublishSubject<DiyResourceListState> _errorController;//if we have got an error
 
-  Observable<DiyResourceListState> _listStream;//Observable.just(new DiyResourceListState.initial());
-  Observable<DiyResourceListState> get listStream => _listStream;
+  ValueConnectableObservable<DiyResourceListState> _lastValObservable;
 
+  //public
+  search(String value) {
+    _searchController.sink.add(value);
+  }
+
+  Observable<DiyResourceListState> get list => _lastValObservable;
+  loadFirst() {
+    _initController.sink.add(null);
+  }
+  loadMore() {
+    _loadMoreController.sink.add(null);
+  }
+  refresh() {
+    _refreshController.sink.add(null);
+  }
   
   //constructor
   DiyResourceBloc() {
-    //controllers
-    _loadFirstPageController = new PublishSubject();
+    //search
+    _searchController = new PublishSubject();
+    _searchValObservable = _searchController.stream.publishValue();
+    _searchValObservable
+      .debounce(Duration(milliseconds: 300))
+      .listen((d) async {
+        print('[SEARCH] value = $d');
+        refresh();
+        _offset = 0;
+      });
+
+    //load data
+    _initController = new PublishSubject();
     _loadMoreController = new PublishSubject();
+    _refreshController = new PublishSubject();
+    _loadAllController = new PublishSubject();
+    _errorController = new PublishSubject();
 
-    //streams
-    Observable firstPageStream = _loadFirstPageController.stream;
-    Observable loadMoreStream =
-      _loadMoreController.stream
-      .debounce(Duration(milliseconds: 300));
-      //.where((p) => p.error == null);
+    Observable<DiyResourceListState> _initObservable = _initController
+      .map((p) => false)
+      .flatMap(_load)
+      .doOnData((d) {
+        //print('[INIT] after flatMap data = $d');
+      });
+    Observable<DiyResourceListState> _loadMoreObservable = _loadMoreController
+      .debounce(Duration(milliseconds: 300))
+      .map((p) => false)
+      .exhaustMap(_load)
+      .doOnData((d) {
+        //print('[LOAD MORE] after exhaustMap data = $d');
+      });
+    Observable<DiyResourceListState> _refreshObservable = _refreshController
+      .map((p) => true)//refresh
+      .flatMap(_load)
+      .doOnData((d) {
+        //print('[REFRESH] after flatMap data = $d');
+      });
 
-    _listStream =
-      Observable
-        .merge([firstPageStream, loadMoreStream])
-        .map((p) {
-          return _state.extendWith(p);
-        });
-  }
+    //merged
+    Observable<Observable<DiyResourceListState>> streams = Observable.merge([_initObservable, _loadMoreObservable, _refreshObservable])
+      .doOnData((d) {
+        //print('[MERGED] data = $d');
+      })
+      .map((p) => Observable.just(p));
 
-  initData({String filter = ''}) async {
-    List<DiyResource> list;
-    DiyResourceListState state = new DiyResourceListState(list: list, isLoading: true, error: null);
+    _lastValObservable = Observable
+      .switchLatest(streams)
+      .doOnData((data) {
+        //print('[MERGED] switch latest data = $data');
+      })
+      .publishValue();
 
-    try {
-      list = await _diyResourceRepository.fetchAllDiyResources(limit: limit, filter: filter);
-      state = new DiyResourceListState(list: list, isLoading: false, error: null);
-      _loadFirstPageController.sink.add(state);
-    } catch(err) {
-      _loadFirstPageController.sink.add(new DiyResourceListState(error: err, isLoading: false, list: null));
-      //_loadFirstPageController.sink.addError(err);
-    }
-    return state;
-  }
 
-  loadMoreResultData({String filter = ''}) async {
-    offset += limit;
-    List<DiyResource> list;
-    DiyResourceListState state = new DiyResourceListState(error: null, list: null, isLoading: true,);
-    _loadMoreController.sink.add(state);
-
-    //await Future.delayed(Duration(seconds: 1));
-    //state = new DiyResourceListState(error: 'exc', list: null, isLoading: false,);
-    //_loadMoreController.sink.add(state);
-
-    try {
-      list = await _diyResourceRepository.fetchAllDiyResources(limit: 10, offset: offset);
-      state = new DiyResourceListState(error: null, list: list, isLoading: false,);
-      _loadMoreController.sink.add(state);
-    } catch(err) {
-      _loadFirstPageController.sink.add(new DiyResourceListState(error: err, list: null, isLoading: false,));
-      //_loadMoreController.sink.addError(err);
-    }
+    _lastValObservable.connect();
+    _searchValObservable.connect();
   }
 
   setInMyPalette(int diyResourceId, {bool val, String filter = ''}) async {
 
   }
 
+  Stream<DiyResourceListState> _load(bool isRefresh) async* {
+    final DiyResourceListState lastVal = _lastValObservable.value;
+
+    if (lastVal == null) {
+      yield null;
+    } else {
+      DiyResourceListState copiedState = lastVal.copyWith(isLoading: true);
+      yield copiedState;
+    }
+
+    DiyResourceListState state;
+    try {
+      //TEST await Future.delayed(Duration(seconds: 2));
+      String searchValue = _searchValObservable.value;
+      List<DiyResource> list = await _diyResourceRepository.fetchAllDiyResources(offset: _offset, limit: _limit, filter: searchValue);
+      if (lastVal == null || isRefresh) {
+        state = new DiyResourceListState.initialList(list);
+      } else {
+        List<DiyResource> currentList = lastVal.list;
+        currentList.addAll(list);
+        state = new DiyResourceListState.initialList(currentList);
+      }
+    } catch(err) {
+      state = new DiyResourceListState(error: err, isLoading: false, list: null);
+    }
+
+    _offset += _limit;
+
+    yield state;
+  }
+
   dispose() async {
-    await _loadFirstPageController.drain();
-    await _loadFirstPageController.close();
-    await _loadMoreController.drain();
+    await _searchController.close();
+    
+    await _initController.close();
+    await _refreshController.close();
     await _loadMoreController.close();
+    await _loadAllController.close();
+    await _errorController.close();
   }
 }

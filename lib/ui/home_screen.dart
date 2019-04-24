@@ -9,7 +9,11 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeState extends State<HomeScreen> with WidgetsBindingObserver {
-  String barcode = '';
+  //constructor
+  _HomeState() {
+    
+  }
+
   /*AppLifecycleState _notification;
 
   @override

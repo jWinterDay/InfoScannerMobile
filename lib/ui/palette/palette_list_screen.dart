@@ -14,53 +14,27 @@ class PaletteListScreen extends StatefulWidget {
 
 class _PaletteListState extends State<PaletteListScreen> {
   final DiyResourceBloc bloc = DiyResourceBloc();
-  TextEditingController _searchController = new TextEditingController();
-  //List<DiyResource> _initData;
   DiyResourceListState _initData;
 
   static const int LIMIT_PER_PAGE = 10;
   ScrollController _scrollController;
-  //bool _isAvailableLoadMore = true;
 
   //constructor
   _PaletteListState() {
     _scrollController = new ScrollController();
-    _searchController.text = '';
     _setInitData();
-
-    //when controller is changed, reinitialize offset
-    //_searchController.addListener(() {
-    //  _isAvailableLoadMore = true;
-    //});
-
-    /*bloc.allDiyResourcesStream.listen((data) {
-      _isAvailableLoadMore = true;
-    });*/
-    //bloc.loadMoreController.stream.listen((data) {
-    //  _isAvailableLoadMore = true;
-    //});
   }
 
   _setInitData() async {
-    _initData = await bloc.initData();
-    //_initData = await bloc.fetchAllDiyResources(offset: _offset, limit: _limit);
-  }
-
-  _searchPalette() {
-    //bloc.fetchAllDiyResources(filter: _searchController.text);
+    _initData = await bloc.loadFirst();
   }
 
   _loadMore() {
-    print('I want to get more');
-    bloc.loadMoreResultData(filter: _searchController.text);
-    //_limit += LIMIT_PER_PAGE;
-    //_offset += LIMIT_PER_PAGE;
-    //bloc.fetchAllDiyResources(limit: _limit, offset: _offset);//, limit: LIMIT_PER_PAGE);//, limit: _limit);
-    //_isAvailableLoadMore = true;
+    bloc.loadMore();
   }
 
   _setInMyPalette(BuildContext context, DiyResource diyResource, bool val) {
-    bloc.setInMyPalette(diyResource.diyResourceId, val: val, filter: _searchController.text);
+    /*bloc.setInMyPalette(diyResource.diyResourceId, val: val, filter: _searchController.text);
     Scaffold
       .of(context)
       .showSnackBar(
@@ -68,15 +42,13 @@ class _PaletteListState extends State<PaletteListScreen> {
           duration: Duration(seconds: 2),
           content: Text('${diyResource.name}'),
         )
-      );
+      );*/
   }
 
   @override
   void dispose() {
     super.dispose();
-    _searchController.dispose();
     bloc.dispose();
-    //_searchController.removeListener(() { });
   }
 
   @override
@@ -94,7 +66,6 @@ class _PaletteListState extends State<PaletteListScreen> {
           Padding(
             padding: EdgeInsets.all(16),
             child: TextField(
-              controller: _searchController,
               decoration: InputDecoration(
                 hintText: 'Search',
                 contentPadding: EdgeInsets.fromLTRB(20.0, 15.0, 20.0, 15.0),
@@ -107,7 +78,7 @@ class _PaletteListState extends State<PaletteListScreen> {
               keyboardType: TextInputType.text,
               textInputAction: TextInputAction.done,
               onChanged: (val) {
-                _searchPalette();
+                bloc.search(val);
               }
             ),
           ),
@@ -115,12 +86,9 @@ class _PaletteListState extends State<PaletteListScreen> {
           //list
           StreamBuilder(
             initialData: _initData,
-            //stream: bloc.allDiyResourcesStream,
-            stream: bloc.listStream,//bloc.initStream,// resultStream,
-            //builder: (context, AsyncSnapshot<List<DiyResource>> snapshot) {
+            stream: bloc.list,
             builder: (context, AsyncSnapshot<DiyResourceListState> snapshot) {
               //print('snapshot = ${snapshot.data}');
-
               if (snapshot.hasData) {
                 return Expanded(
                   child: buildList(snapshot)
@@ -166,11 +134,13 @@ class _PaletteListState extends State<PaletteListScreen> {
         itemCount: snapshot.data.list == null ? 0 : snapshot.data.list.length + 1,
         separatorBuilder: (BuildContext context, int index) => Divider(),
         itemBuilder: (BuildContext context, int index) {
-          final isLoading = snapshot.data.isLoading;
+          DiyResourceListState state = snapshot.data;
+
+          final isLoading = state.isLoading;
 
           //list
-          if (index < snapshot.data.list.length) {
-            DiyResource diyResource = snapshot.data.list[index];
+          if (index < state.list.length) {
+            DiyResource diyResource = state.list[index];
             String color = diyResource.color;
             Map<String, dynamic> colorJSON = json.decode(color);
 

@@ -17,26 +17,6 @@ class DiyResourceListState {
   bool isLoading;
   Object error;
 
-  DiyResourceListState extendWith(DiyResourceListState nextState) {
-    if (nextState == null) {
-      return null;
-    }
-
-    this.isLoading = nextState?.isLoading;
-    this.error = nextState?.error;
-
-    if (nextState.list == null) {
-      return this;
-    }
-    if (this.list == null) {
-      this.list = nextState.list;
-    }
-
-    this.list.addAll(nextState.list);
-
-    return this;
-  }
-
   //constructor
   DiyResourceListState({
     @required this.list,
@@ -49,6 +29,20 @@ class DiyResourceListState {
     list: <DiyResource>[],
     error: null,
   );
+
+  factory DiyResourceListState.initialList(List<DiyResource> list) => DiyResourceListState(
+    isLoading: false,
+    list: list,
+    error: null,
+  );
+
+  DiyResourceListState copyWith({List<DiyResource> list, bool isLoading, Object error}) =>
+    DiyResourceListState(
+      isLoading: isLoading ?? this.isLoading,
+      list: list != null ? list : this.list,
+      error: error,
+    );
+
 
   @override
   String toString() {

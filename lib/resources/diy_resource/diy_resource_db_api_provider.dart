@@ -20,7 +20,7 @@ class DiyResourceDbApiProvider {
       return [];
     }
 
-    print('limit = $limit, offset = $offset');
+    print('limit = $limit, offset = $offset, filter = $filter');
 
     Database db = await DBProvider.instance.database;
 
@@ -49,7 +49,7 @@ class DiyResourceDbApiProvider {
                 from diy_resource dr
                 left join users_diy_resource udr on udr.diy_resource_id = dr.diy_resource_id
                 left join amount_type at on at.amount_type_id = udr.amount_type_id
-               where dr.no like '%$filter%'
+               where dr.no like '%${filter??''}%'
                order by case
                           when dr.no regexp '([[:digit:]])+' then 1
                           else 0
@@ -58,6 +58,7 @@ class DiyResourceDbApiProvider {
                ) q
       ''';
     var res = await db.rawQuery(sql);
+    //print('sql res = $res');
     List<DiyResource> list = res.isNotEmpty ? res.map((p) => DiyResource.fromJson(p)).toList() : [];
     return list;
   }
