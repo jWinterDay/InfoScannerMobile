@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:quiver/core.dart' as quiver;
 import 'package:flutter/foundation.dart';
 import 'package:info_scanner_mobile/resources/common.dart';
 
@@ -15,6 +16,7 @@ String diyResourceToJson(DiyResource data) {
 class DiyResourceListState {
   List<DiyResource> list;
   bool isLoading;
+  bool isLoadedAll;
   Object error;
 
   //constructor
@@ -22,23 +24,27 @@ class DiyResourceListState {
     @required this.list,
     @required this.isLoading,
     @required this.error,
+    @required this.isLoadedAll,
   });
 
   factory DiyResourceListState.initial() => DiyResourceListState(
     isLoading: false,
+    isLoadedAll: false,
     list: <DiyResource>[],
     error: null,
   );
 
-  factory DiyResourceListState.initialList(List<DiyResource> list) => DiyResourceListState(
+  factory DiyResourceListState.initialList(List<DiyResource> list, bool isLoadedAll,) => DiyResourceListState(
     isLoading: false,
+    isLoadedAll: isLoadedAll,
     list: list,
     error: null,
   );
 
-  DiyResourceListState copyWith({List<DiyResource> list, bool isLoading, Object error}) =>
+  DiyResourceListState copyWith({List<DiyResource> list, bool isLoading, bool isLoadedAll, Object error}) =>
     DiyResourceListState(
       isLoading: isLoading ?? this.isLoading,
+      isLoadedAll: isLoadedAll ?? this.isLoadedAll,
       list: list != null ? list : this.list,
       error: error,
     );
@@ -50,6 +56,7 @@ class DiyResourceListState {
     """
     (
       isLoading: $isLoading,
+      isLoadedAll: $isLoadedAll,
       error: $error,
       list: $list
     )
@@ -67,14 +74,31 @@ class DiyResource {
   bool inMyPalette;
 
   DiyResource({
-    this.color,
     this.diyResourceId,
-    this.hsl,
-    this.lab,
     this.name,
     this.no,
+    this.color,
+    this.hsl,
+    this.lab,
     this.inMyPalette
   });
+
+  DiyResource copyWith({int diyResourceId,
+                        String name,
+                        String no,
+                        String color,
+                        String hsl,
+                        String lab,
+                        bool inMyPalette}) =>
+    DiyResource(
+      diyResourceId: diyResourceId ?? this.diyResourceId,
+      name: name ?? this.name,
+      no: no ?? this.no,
+      color: color ?? this.color,
+      hsl: hsl ?? this.hsl,
+      lab: lab ?? this.lab,
+      inMyPalette: inMyPalette ?? this.inMyPalette
+    );
 
   factory DiyResource.fromJson(Map<String, dynamic> json) => new DiyResource(
     color: json["color"] == null ? null : json["color"],
@@ -93,14 +117,21 @@ class DiyResource {
     "lab": lab == null ? null : lab,
     "name": name == null ? null : name,
     "no": no == null ? null : no,
-    "in_my_palette": no == null ? 0 : Common.boolToInt(no)
+    "in_my_palette": inMyPalette == null ? 0 : Common.boolToInt(inMyPalette)
   };
+
+  bool operator == (o) => 
+    o is DiyResource 
+    && diyResourceId == o.diyResourceId;
+    //&& no == o.no;
+
+  int get hashCode => diyResourceId.hashCode;//quiver.hash2(diyResourceId.hashCode, no.hashCode);
 
   @override
   String toString() {
     return
     """
-    (no: $no)
+    (no: $no, inMyPalette: $inMyPalette)
     """;
   }
 }

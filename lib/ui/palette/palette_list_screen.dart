@@ -15,8 +15,6 @@ class PaletteListScreen extends StatefulWidget {
 class _PaletteListState extends State<PaletteListScreen> {
   final DiyResourceBloc bloc = DiyResourceBloc();
   DiyResourceListState _initData;
-
-  static const int LIMIT_PER_PAGE = 10;
   ScrollController _scrollController;
 
   //constructor
@@ -29,13 +27,10 @@ class _PaletteListState extends State<PaletteListScreen> {
     _initData = await bloc.loadFirst();
   }
 
-  _loadMore() {
-    bloc.loadMore();
-  }
-
   _setInMyPalette(BuildContext context, DiyResource diyResource, bool val) {
-    /*bloc.setInMyPalette(diyResource.diyResourceId, val: val, filter: _searchController.text);
-    Scaffold
+    bloc.setInMyPalette(diyResource, val: val);
+
+    /*Scaffold
       .of(context)
       .showSnackBar(
         SnackBar(
@@ -123,7 +118,7 @@ class _PaletteListState extends State<PaletteListScreen> {
       onNotification: (ScrollNotification notification) {
         if (notification is ScrollEndNotification) {
           if (_scrollController.position.extentAfter == 0) {
-            _loadMore();
+            bloc.loadMore();
           }
         }
         return false;
@@ -135,8 +130,6 @@ class _PaletteListState extends State<PaletteListScreen> {
         separatorBuilder: (BuildContext context, int index) => Divider(),
         itemBuilder: (BuildContext context, int index) {
           DiyResourceListState state = snapshot.data;
-
-          final isLoading = state.isLoading;
 
           //list
           if (index < state.list.length) {
@@ -156,7 +149,7 @@ class _PaletteListState extends State<PaletteListScreen> {
                   },
                   value: diyResource.inMyPalette,
                 ),
-                title: Text('$index ] ${diyResource.no}', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20),),
+                title: Text(diyResource.no, style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20),),
                 subtitle: Text(diyResource.name),
                 trailing: Container(
                   decoration: BoxDecoration(
@@ -188,6 +181,10 @@ class _PaletteListState extends State<PaletteListScreen> {
           }*/
 
           //load more
+          if (state.isLoadedAll) {
+            return Container();
+          }
+
           return Container(
             decoration: BoxDecoration(
               border: Border(top: BorderSide(color: Colors.red)),
@@ -195,18 +192,16 @@ class _PaletteListState extends State<PaletteListScreen> {
             ),
             child: Padding(
               padding: const EdgeInsets.all(1.0),
-              child: loadMore(context, isLoading, snapshot.data.error), 
+              child: loadMore(context, state), 
             )
           );
-          //return loadMore(context, isLoading);
         },
       )
-      
     );
   }
 
-  Widget loadMore(BuildContext context, bool isLoading, Object error) {
-    if (isLoading) {
+  Widget loadMore(BuildContext context, DiyResourceListState state) {
+    if (state.isLoading) {
       return Center(
         child: Opacity(
           opacity: 1,
@@ -215,7 +210,8 @@ class _PaletteListState extends State<PaletteListScreen> {
       );
     }
 
-    Widget errInfo = (error == null) ? Container() : Text(error.toString(), style: TextStyle(color: Colors.red, fontWeight: FontWeight.w600),);
+    Widget errInfo = (state.error == null) ?
+      Container() : Text(state.error.toString(), style: TextStyle(color: Colors.red, fontWeight: FontWeight.w600),);
 
     return Center(
       child: Column(
@@ -224,130 +220,12 @@ class _PaletteListState extends State<PaletteListScreen> {
           FlatButton.icon(
             label: Text('Load more', style: TextStyle(color: Colors.blue),),
             icon: Icon(Icons.get_app),
-            onPressed: () => { _loadMore() },
+            onPressed: () => {
+              bloc.loadMore()
+            },
           )
         ],
       )
     );
   }
 }
-
-/*child: GridView.builder(
-        controller: _scrollController,
-        itemCount: snapshot.data.length,
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(crossAxisCount: 1, childAspectRatio: 7),
-        itemBuilder: (BuildContext context, int index) {
-          DiyResource diyResource = snapshot.data[index];
-          String color = diyResource.color;
-          Map<String, dynamic> colorJSON = json.decode(color);
-
-          return Container(
-            decoration: BoxDecoration(
-              //backgroundBlendMode: BlendMode.difference,
-              border: Border(bottom: BorderSide(color: Colors.grey[300])),//Border.all(color: Colors.black),
-              color: diyResource.inMyPalette ? Colors.green[100] : null//Theme.of(context).buttonColor// Colors.white
-            ),
-            child: ListTile(
-              leading: Checkbox(
-                onChanged: (val) {
-                  _setInMyPalette(context, diyResource, val);
-                },
-                value: diyResource.inMyPalette,
-              ),
-              title: Text('$index ] ${diyResource.no}', style: TextStyle(fontWeight: FontWeight.w700, fontSize: 20),),
-              subtitle: Text(diyResource.name),
-              trailing: Container(
-                decoration: BoxDecoration(
-                  border: Border.all(color: Colors.black),
-                  color: Color.fromARGB(255, colorJSON['R'], colorJSON['G'], colorJSON['B']),
-                ),
-                height: 30,
-                width: 70,
-              ),
-              onTap: ()  { },
-            ),
-          );
-      })*/
-
-/*return ListView(
-      controller: scrollController,
-      padding: const EdgeInsets.all(2),
-      children: <Widget>[
-        PaginatedDataTable(
-          header: const Text(''),
-          source: PaletteDataSource(),
-          rowsPerPage: _rowsPerPage,
-          onPageChanged: (firstRowIndex) {
-            //scrollController.position.jumpTo(scrollController.position.minScrollExtent);
-          },
-          actions: <Widget>[
-            IconButton(
-              icon: Icon(Icons.ac_unit),
-              onPressed: null,
-            ),
-            IconButton(
-              icon: Icon(Icons.account_balance),
-              onPressed: null,
-            ),
-          ],
-          availableRowsPerPage: [5, 10, 20, 50],
-          onRowsPerPageChanged: (int val) {
-            print(val);
-            setState(() {
-              _rowsPerPage = val;  
-            });
-          },
-          onSelectAll: (val) {
-            print(val);
-          },
-          //onRowsPerPageChanged: (int value) { setState(() { 5 = value; }); },
-          sortColumnIndex: 0,
-          sortAscending: false,
-          columns: <DataColumn>[
-            DataColumn(
-              label: new Text('Rank', style: new TextStyle(fontSize: 20, color: Colors.blue[700])),
-              numeric: false,
-                //onSort: (int columnIndex, bool ascending) => _sort<num>((Player d) => d.rank, columnIndex, ascending)
-            ),
-            new DataColumn(
-              label: new Text('Prev', style: new TextStyle(fontSize: 20, color: Colors.blue[700])),
-              numeric: true,
-                //onSort: (int columnIndex, bool ascending) => _sort<num>((Player d) => d.prevRank, columnIndex, ascending)
-            ),
-          ]
-        )
-      ]
-    );
-
-class PaletteDataSource extends DataTableSource {
-  @override
-  DataRow getRow(int index) {
-    return DataRow.byIndex(
-      index: index,
-      cells: [
-        DataCell(
-          Text('row #$index', style: TextStyle(fontSize: 20),),
-        ),
-        DataCell(
-          Row(
-            children: <Widget>[
-              Text('name #$index', style: TextStyle(fontSize: 20),)
-            ],
-          ),
-          
-        ),
-      ],
-    );
-  }
-
-  int get rowsPerPage => 10;
-
-  @override
-  int get rowCount => 150;
-
-  @override
-  bool get isRowCountApproximate => false;
-
-  @override
-  int get selectedRowCount => 0;
-}*/

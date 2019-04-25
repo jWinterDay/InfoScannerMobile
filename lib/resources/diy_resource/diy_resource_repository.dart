@@ -8,5 +8,5 @@ class DiyResourceRepository {
   Future<List<DiyResource>> fetchAllDiyResources({int offset=0, int limit, String filter=''}) =>
     _diyResourceProvider.getDiyResources(offset: offset, limit: limit, filter: filter);
 
-  setInMyPalette(int diyResourceId, {bool val}) => _diyResourceProvider.setInMyPalette(diyResourceId, val: val);
+  setInMyPalette(DiyResource diyResource, {bool val}) => _diyResourceProvider.setInMyPalette(diyResource, val: val);
 }
