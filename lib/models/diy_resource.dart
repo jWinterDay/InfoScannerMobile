@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'package:quiver/core.dart' as quiver;
 import 'package:flutter/foundation.dart';
 import 'package:info_scanner_mobile/resources/common.dart';
 

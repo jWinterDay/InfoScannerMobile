@@ -25,7 +25,7 @@ class ProjectDbApiProvider {
   Future<List<Project>> getProjects() async {
     Database db = await DBProvider.instance.database;
 
-    var res = await db.query('project', orderBy: 'unix_begin_date desc, project_id desc');
+    var res = await db.query('project', orderBy: 'project_id desc');
     List<Project> list = res.isNotEmpty ? res.map((p) => Project.fromMap(p)).toList() : [];
 
     //print('list = $list');

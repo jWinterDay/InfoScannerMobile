@@ -219,26 +219,32 @@ Widget showAddInfo(Project project) {
         children: <Widget>[
           showProjectId(project),
           ListTile(
+            dense: true,
             leading: Text('begin date'),
             title: Text(Common.unixDateToStr(project?.unixBeginDate), style: ts,),
           ),
           ListTile(
+            dense: true,
             leading: Text('project guid'),
             title: Text(project?.projectGuid??'', style: ts,),
           ),
           ListTile(
+            dense: true,
             leading: Text('device guid'),
             title: Text(project?.deviceGuid??'', style: ts,),
           ),
           ListTile(
+            dense: true,
             leading: Text('own project'),
             title: Text((project?.isOwnProject??1).toString(), style: ts,),
           ),
           ListTile(
+            dense: true,
             leading: Text('last operation'),
             title: Text(project?.lastOperation??'', style: ts,),
           ),
           ListTile(
+            dense: true,
             leading: Text('last change date'),
             title: Text(Common.unixDateToStr(project?.unixLastChangeDate), style: ts,),
           ),

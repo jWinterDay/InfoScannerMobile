@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import 'package:info_scanner_mobile/models/project_model.dart';
 import 'package:info_scanner_mobile/blocs/projects_bloc.dart';
 import 'package:info_scanner_mobile/ui/project/project_edit_screen.dart';
+import 'package:info_scanner_mobile/ui/schema/schema_screen.dart';
 
 //final ProjectsBloc bloc = ProjectsBloc();//ProjectsBloc();
 
@@ -107,11 +108,21 @@ class _ProjectListState extends State<ProjectListScreen> {
 Widget buildList(AsyncSnapshot<List<Project>> snapshot, {@required ProjectsBloc bloc }) {
   final DateFormat dateFormatter = new DateFormat('yyyy.MM.dd HH:mm:ss');
 
-  void editProject(BuildContext context, Project project) {
+  editProject(BuildContext context, Project project) {
     Navigator.of(context).push(
       MaterialPageRoute<void>(
         builder: (BuildContext context) {
           return ProjectEditScreen(project: project, bloc: bloc,);
+        }
+      ),
+    );
+  }
+
+  viewSchema(BuildContext context, Project project) {
+    Navigator.of(context).push(
+      MaterialPageRoute<void>(
+        builder: (BuildContext context) {
+          return SchemaScreen(project: project);
         }
       ),
     );
@@ -204,23 +215,17 @@ Widget buildList(AsyncSnapshot<List<Project>> snapshot, {@required ProjectsBloc 
           //decoration: UnderlineTabIndicator(borderSide: BorderSide(), insets: EdgeInsets.all(5)),
           decoration: project.unixEndDate != null ? BoxDecoration(color: Colors.grey) : null,
           child: ListTile(
-            leading: Text(project.projectId.toString()),
+            leading: FlatButton.icon(
+              icon: Icon(Icons.edit),
+              label: Text(project.projectId.toString()),
+              onPressed: () {
+                editProject(context, project);
+              },
+            ),
             title: Text(project.name),
             subtitle: Text('${beginDateStr??''} ${project.note??''}'),
-            /*trailing: Checkbox(
-              onChanged: (val) {
-                if (val) {
-                  bloc.restoreProject(project);
-                } else {
-                  bloc.preRemoveProject(project);
-                }
-              },
-              value: project.endDate == null,
-            ),*/
             onTap: ()  {
-              editProject(context, project);
-              //print('tap'),
-              //bloc.fetchAllProjects()
+              viewSchema(context, project);
             },
           ),
         )

@@ -83,7 +83,6 @@ class _PaletteListState extends State<PaletteListScreen> {
             initialData: _initData,
             stream: bloc.list,
             builder: (context, AsyncSnapshot<DiyResourceListState> snapshot) {
-              //print('snapshot = ${snapshot.data}');
               if (snapshot.hasData) {
                 return Expanded(
                   child: buildList(snapshot)
@@ -105,6 +104,8 @@ class _PaletteListState extends State<PaletteListScreen> {
   }
 
   Widget buildList(AsyncSnapshot<DiyResourceListState> snapshot) {
+    DiyResourceListState state = snapshot.data;
+
     if (snapshot.data.list != null && snapshot.data.list.isEmpty) {
       return Center(
         child: Text(
@@ -129,8 +130,6 @@ class _PaletteListState extends State<PaletteListScreen> {
         itemCount: snapshot.data.list == null ? 0 : snapshot.data.list.length + 1,
         separatorBuilder: (BuildContext context, int index) => Divider(),
         itemBuilder: (BuildContext context, int index) {
-          DiyResourceListState state = snapshot.data;
-
           //list
           if (index < state.list.length) {
             DiyResource diyResource = state.list[index];

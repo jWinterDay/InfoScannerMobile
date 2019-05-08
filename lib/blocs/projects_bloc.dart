@@ -10,6 +10,7 @@ Function projectEq = const ListEquality().equals;
 
 //final bloc = ProjectsBloc();
 
+//TODO remake
 class ProjectsBloc {
   final _projectRepository = ProjectRepository();
   final _projectsFetcher = PublishSubject<List<Project>>();
@@ -19,7 +20,7 @@ class ProjectsBloc {
 
   //constructor
   ProjectsBloc() {
-    allProjectsStream
+    /*allProjectsStream
       .distinct((old, next) {
         List<String> oldGuids = old.map((item) => item.projectGuid).toList();
         List<String> nextGuids = next.map((item) => item.projectGuid).toList();
@@ -30,7 +31,7 @@ class ProjectsBloc {
       })
       //.debounce(Duration(milliseconds: 500))
       //.interval(Duration(seconds: 2))
-      .listen(syncAllProjects);
+      .listen(syncAllProjects);*/
   }
 
   syncAllProjects(List<Project> data) async {
