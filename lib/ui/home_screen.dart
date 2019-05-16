@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import 'package:info_scanner_mobile/global_settings.dart';
 import 'package:info_scanner_mobile/ui/left_panel_screen.dart';
 import 'package:info_scanner_mobile/blocs/logged_user_bloc.dart';//init gUserBloc for global detect
 
@@ -37,6 +38,7 @@ class _HomeState extends State<HomeScreen> with WidgetsBindingObserver {
   void dispose() {
     super.dispose();
     gUserBloc.dispose();
+    //GlobalSettings.
   }
 
   @override

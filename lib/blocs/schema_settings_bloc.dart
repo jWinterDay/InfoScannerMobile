@@ -1,30 +1,33 @@
 import 'package:rxdart/rxdart.dart';
 import 'dart:async';
+import 'package:kiwi/kiwi.dart';
 
 import 'package:info_scanner_mobile/resources/schema/schema_settings_repository.dart';
-import 'package:info_scanner_mobile/models/schema_settings.dart';
 import 'package:info_scanner_mobile/models/schema_tune.dart';
-import 'package:info_scanner_mobile/models/schema_calc_method.dart';
-
+import 'package:info_scanner_mobile/models/schema_size.dart';
 
 
 class SchemaSettingsBloc {
-  final SchemaRepository _schemaRepository = SchemaRepository();
+  SchemaSettingsRepository _schemaSettingsRepository;
 
   //tune(count)
   PublishSubject<SchemaTuneState> _schemaTuneController;
   ValueConnectableObservable<SchemaTuneState> _schemaTuneValObservable;
 
-  //calc method
-  PublishSubject<SchemaCalcMethodState> _schemaCalcMethodController;
-  ValueConnectableObservable<SchemaCalcMethodState> _schemaCalcMethodValObservable;
+  //size
+  PublishSubject<SchemaSizeState> _schemaSizeController;
+  ValueConnectableObservable<SchemaSizeState> _schemaSizeValObservable;
 
   //public
   Observable<SchemaTuneState> get schemaTuneState => _schemaTuneController.stream;
-  Observable<SchemaCalcMethodState> get schemaCalcMethodState => _schemaCalcMethodController.stream;
+  Observable<SchemaSizeState> get schemaSizeState => _schemaSizeController.stream;
   
   //constructor
   SchemaSettingsBloc() {
+    //injector
+    _schemaSettingsRepository = SchemaSettingsRepository();
+    _schemaSettingsRepository.setup();
+
     //schema tune(count)
     _schemaTuneController = new PublishSubject();
     _schemaTuneValObservable = _schemaTuneController.stream.publishValue();
@@ -36,15 +39,16 @@ class SchemaSettingsBloc {
       });
     _schemaTuneValObservable.connect();
 
-    _schemaCalcMethodController = new PublishSubject();
-    _schemaCalcMethodValObservable = _schemaCalcMethodController.stream.publishValue();
-    _schemaCalcMethodValObservable
+    //size
+    _schemaSizeController = new PublishSubject();
+    _schemaSizeValObservable = _schemaSizeController.stream.publishValue();
+    _schemaSizeValObservable
       .debounce(Duration(milliseconds: 300))
       .listen((d) {
-        //print('[SCHEMA CALC METHOD] value = $d');
-        //print('[SCHEMA CALC METHOD]');
+        print('[SCHEMA SIZE] value = $d');
+        //print('[SCHEMA SIZE]');
       });
-    _schemaCalcMethodValObservable.connect();
+    _schemaSizeValObservable.connect();
   }
 
   //schema tune (count list)
@@ -52,9 +56,10 @@ class SchemaSettingsBloc {
     SchemaTuneState state;
 
     try {
-      List<SchemaTune> countList = await _schemaRepository.getSchemaTuneList();
+      List<SchemaTune> countList = await _schemaSettingsRepository.getSchemaTuneList();
       state = new SchemaTuneState.initial(list: countList);
     } catch(err) {
+      print(err);
       state = new SchemaTuneState.error(error: err);
     }
     _schemaTuneController.sink.add(state);
@@ -67,53 +72,37 @@ class SchemaSettingsBloc {
     _schemaTuneController.sink.add(nextState);
   }
 
-  //method
-  fetchSchemaCalcMethodState() async {
-    SchemaCalcMethodState state;
+  //size
+  fetchSchemaSizeState() async {
+    SchemaSizeState state;
 
-    try {
-      List<Method> methodList = await _schemaRepository.getSchemaMethodList();
-      state = new SchemaCalcMethodState.initial(methodList: methodList, calcMethodId: null);
+    /*try {
+      List<SchemaTune> countList = await _schemaRepository.getSchemaTuneList();
+      state = new SchemaTuneState.initial(list: countList);
     } catch(err) {
-      state = new SchemaCalcMethodState.error(error: err);
-    }
+      state = new SchemaTuneState.error(error: err);
+    }*/
+    await Future.delayed(Duration(milliseconds: 0));
+    state = new SchemaSizeState(error: null, isLoading: false, sizeParam: SizeParam(height: null, width: null));
 
-    _schemaCalcMethodController.sink.add(state);
+    _schemaSizeController.sink.add(state);
+
+    return state;
   }
 
-  changeCurrentCalcMethodId(int calcMethodId) {
-    SchemaCalcMethodState lastState = _schemaCalcMethodValObservable.value;
+  changeSize(String width, String height) {
+    SchemaSizeState lastState = _schemaSizeValObservable.value;
 
-    SchemaCalcMethodState nextState = lastState.copyWith(calcMethodId: calcMethodId);
-    _schemaCalcMethodController.sink.add(nextState);
+    SizeParam lastSizeParam = lastState.sizeParam;
+    SizeParam nextSizeParam = lastSizeParam.copyWith(width: int.tryParse(width), height: int.tryParse(height));
+
+    SchemaSizeState nextState = lastState.copyWith(sizeParam: nextSizeParam);
+
+    _schemaSizeController.sink.add(nextState);
   }
-
-  //param
-  changeCalcMethodParam(String val, {int paramId}) {
-    SchemaCalcMethodState lastState = _schemaCalcMethodValObservable.value;
-
-    List<Param> params = lastState.methodList
-      .singleWhere((method) => method.methodId == lastState.calcMethodId)
-      .paramList;
-
-    //params.re
-
-    Param param = params
-      .singleWhere((param) => param.paramId == paramId);
-
-    int parsed = int.tryParse(val);
-
-    if (parsed == null) {
-      return;
-    }
-
-    param.value = parsed;
-
-    _schemaCalcMethodController.sink.add(lastState);
-  }
-
+  
   dispose() async {
     await _schemaTuneController.close();
-    await _schemaCalcMethodController.close();
+    await _schemaSizeController.close();
   }
 }

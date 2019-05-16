@@ -8,3 +8,5 @@ Dart + Flutter project for Android and IOS mobiles
 ## Getting Started
 
 for generating models I used this site: https://app.quicktype.io/#l=dart
+
+use kiwi.dart for DI. To generate Injector class use kiwi_generator(console: flutter packages pub run build_runner build)

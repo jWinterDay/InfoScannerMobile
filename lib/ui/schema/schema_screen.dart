@@ -3,9 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:info_scanner_mobile/blocs/schema_settings_bloc.dart';
 
 import 'package:info_scanner_mobile/models/project_model.dart';
-import 'package:info_scanner_mobile/models/schema_settings.dart';
 import 'package:info_scanner_mobile/models/schema_tune.dart';
-import 'package:info_scanner_mobile/models/schema_calc_method.dart';
+import 'package:info_scanner_mobile/models/schema_size.dart';
 
 class SchemaScreen extends StatefulWidget {
   final Project project;
@@ -18,8 +17,10 @@ class SchemaScreen extends StatefulWidget {
 }
 
 class _SchemaState extends State<SchemaScreen> {
-  Project project;
-  SchemaSettingsBloc bloc = new SchemaSettingsBloc();
+  final Project project;
+  final SchemaSettingsBloc bloc = new SchemaSettingsBloc();
+  TextEditingController _schemaStateSizeWidthCtrl;
+  TextEditingController _schemaStateSizeHeightCtrl;
 
   //constructor
   _SchemaState(this.project);
@@ -27,9 +28,15 @@ class _SchemaState extends State<SchemaScreen> {
   @override
   void initState() {
     super.initState();
+    initAsync();
+  }
 
+  initAsync() async {
     bloc.fetchSchemaTuneState();
-    bloc.fetchSchemaCalcMethodState();
+    SchemaSizeState sizeState = await bloc.fetchSchemaSizeState();
+
+    _schemaStateSizeWidthCtrl = new TextEditingController(text: sizeState.sizeParam.width?.toString());
+    _schemaStateSizeHeightCtrl = new TextEditingController(text: sizeState.sizeParam.height?.toString());
   }
 
   @override
@@ -56,8 +63,8 @@ class _SchemaState extends State<SchemaScreen> {
             children: <Widget>[
               _settingCaption('Count'),
               _buildSchemaTune(),
-              _settingCaption('Method'),
-              _buildSchemaCalcMethod(),
+              _settingCaption('Size'),
+              _buildSchemaSize(),
             ],
           ),
         ),
@@ -95,65 +102,50 @@ class _SchemaState extends State<SchemaScreen> {
     );
   }
 
-  Widget _buildSchemaCalcMethod() {
-    return StreamBuilder(
-      stream: bloc.schemaCalcMethodState,
-      builder: (context, AsyncSnapshot<SchemaCalcMethodState> snapshot) {
-        //print('snapshot = $snapshot');
+  _stateSizeChangeHandler(String val) {
+    String width = _schemaStateSizeWidthCtrl.value.text;
+    String height = _schemaStateSizeHeightCtrl.value.text;
 
+    bloc.changeSize(width, height);
+  }
+
+  Widget _buildSchemaSize() {
+    return StreamBuilder(
+      stream: bloc.schemaSizeState,
+      builder: (context, AsyncSnapshot<SchemaSizeState> snapshot) {
         if (snapshot.hasData) {
-          SchemaCalcMethodState state = snapshot.data;
+          SchemaSizeState state = snapshot.data;
 
           //error
           if (state.error != null) {
             return Text(state.error.toString());
           }
 
-          List<Widget> list = new List();
-
-          //methods
-          List<Widget> methods = state.methodList.map((method) {
-            return RadioListTile(
-              title: Text(method.name, style: TextStyle(color: Color(Colors.blue.value))),
-              groupValue: state.calcMethodId,
-              value: method.methodId,
-              activeColor: Color(Colors.red.value),
-              onChanged: bloc.changeCurrentCalcMethodId,
-            );
-          }).toList();
-
-          list.addAll(methods);
-
-          //params
-          if (methods.length > 0 && state.calcMethodId != null) {
-            List<Widget> params = state.methodList
-              .firstWhere((method) => method.methodId == state.calcMethodId)
-              .paramList
-              .map((param) {
-                return TextField(
-                  decoration: InputDecoration(
-                    prefixIcon: Icon(Icons.apps),
-                    hintText: param.hint
-                  ),
-                  keyboardType: TextInputType.number,
-                  onChanged: (val) {
-                    print('val = $val');
-                    //bloc.changeCalcMethodParam(val, paramId: param.paramId);
-                  }
-                );
-              })
-              .toList();
-
-            list.addAll(params);
-          }
-
           return Column(
-            children: list
+            children: <Widget>[
+              TextField(
+                controller: _schemaStateSizeWidthCtrl,
+                decoration: InputDecoration(
+                  prefixIcon: Icon(Icons.apps),
+                  hintText: 'Width'
+                ),
+                keyboardType: TextInputType.number,
+                onChanged: _stateSizeChangeHandler,
+
+              ),
+              TextField(
+                controller: _schemaStateSizeHeightCtrl,
+                decoration: InputDecoration(
+                  prefixIcon: Icon(Icons.apps),
+                  hintText: 'Height'
+                ),
+                keyboardType: TextInputType.number,
+                onChanged: _stateSizeChangeHandler,
+              ),
+            ],
           );
-        } else if (snapshot.hasError) {
-          return Text(snapshot.error.toString());
         }
-        
+
         return Center(child: CircularProgressIndicator());
       }
     );
@@ -165,85 +157,6 @@ class _SchemaState extends State<SchemaScreen> {
     return Container(
       child: Text(caption, style: txtStyle, ),
       padding: EdgeInsets.only(top: 15),
-      //alignment: Alignment.topLeft,
     );
   }
-
-  /*
-  Widget _buildSchemaTune(AsyncSnapshot<SchemaSettings> snapshot) {
-    SchemaSettings state = snapshot.data;
-
-    //error
-    if (state.error != null) {
-      return Text(state.error.toString());
-    }
-
-    //schema tune (count list)
-    return DropdownButtonFormField(
-      hint: Text('Count list'),
-      value: state.schemaTuneId,
-      onChanged: bloc.changeCurrentSchemaTuneId,
-      items: state.schemaTuneListState.list.map((p) => DropdownMenuItem(
-        child: Text(p.name),
-        value: p.schemaTuneId
-      )).toList(growable: false),
-    );
-  }
-
-  Widget _buildSchemaCalcMethod(AsyncSnapshot<SchemaSettings> snapshot) {
-    SchemaSettings state = snapshot.data;
-
-    //error
-    if (state.error != null) {
-      return Text(state.error.toString());
-    }
-
-    var list = new List<Widget>();
-    var methods = state.schemaCalcMethod.methodList;
-
-    methods.forEach((method) {
-      //method
-      list.add(
-        RadioListTile(
-          title: Text(method.name, style: TextStyle(color: Color(Colors.blue.value)),),
-          groupValue: state.schemaCalcMethodId,
-          value: method.methodId,
-          activeColor: Color(Colors.red.value),
-          onChanged: bloc.changeCurrentCalcMethodId,
-        )
-      );
-
-      //param
-      method.paramList.forEach((param) {
-        list.add(TextField(
-          decoration: InputDecoration(
-            prefixIcon: Icon(Icons.apps),
-            enabled: (method.methodId == state.schemaCalcMethodId),
-            //errorText: state.error.toString(),
-            //icon: Icon(Icons.text_fields),
-            hintText: param.hint
-          ),
-          keyboardType: TextInputType.number,
-          onChanged: (val) {
-            bloc.changeCalcMethodParam(val, paramId: param.paramId);
-          }
-        ));
-      });
-    });
-
-    return Column(
-      children: list
-    );
-  }
-
-  Widget _settingCaption(String caption) {
-    TextStyle txtStyle = TextStyle(fontWeight: FontWeight.w800, fontSize: 16, color: Colors.blue, );
-
-    return Container(
-      child: Text(caption, style: txtStyle, ),
-      padding: EdgeInsets.only(top: 15),
-      //alignment: Alignment.topLeft,
-    );
-  }
-  */
 }

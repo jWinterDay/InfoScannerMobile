@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_stetho/flutter_stetho.dart';
+import 'package:kiwi/kiwi.dart' as kiwi;
 
 import 'ui/project/project_list_screen.dart';
 import 'ui/home_screen.dart';
@@ -7,8 +8,15 @@ import 'ui/palette/palette_list_screen.dart';
 import 'ui/auth/user_login_screen.dart';
 
 
+//import 'test01.dart';
+
 void main() {
   //Stetho.initialize();
+
+  //setup(true);
+
+  //kiwi.Container container = kiwi.Container();
+  //Repository rep = container<Repository>();
 
   runApp(App());
 }
