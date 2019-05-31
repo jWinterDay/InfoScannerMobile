@@ -1,4 +1,6 @@
 import 'package:http/http.dart' as http;
+import 'package:info_scanner_mobile/resources/Exceptions.dart';
+import 'package:info_scanner_mobile/resources/constants.dart';
 import 'dart:convert';
 import 'package:sqflite/sqflite.dart';
 
@@ -9,7 +11,6 @@ import 'package:info_scanner_mobile/resources/project/project_db_api_provider.da
 import 'package:info_scanner_mobile/models/project_model.dart';
 import 'package:info_scanner_mobile/models/sync_model.dart';
 
-final String syncAllUrl = 'http://192.168.1.42:3001/project/ajax/list';
 
 class SyncApiProvider {
   final Common _common = new Common();
@@ -17,7 +18,15 @@ class SyncApiProvider {
 
   //http sync
   Future<SyncModel> syncAll() async {
-    http.Response response = await _common.httpWrapper(syncAllUrl);
+    http.Response response;
+
+    //try {
+      response = await _common.httpWrapper(Constants.syncAllUrl);
+    //} catch(ex) {
+      //throw new AuthException(message, code)
+      //print('>>>>>>>>>>>>>> $ex');
+    //}
+    
 
     if (response.statusCode == 200) {
       final responseJSON = json.decode(response.body);

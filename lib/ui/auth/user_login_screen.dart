@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:info_scanner_mobile/models/logged_user_info.dart';
-import 'package:info_scanner_mobile/blocs/logged_user_bloc.dart';
+import 'package:info_scanner_mobile/blocs/global_info_bloc.dart';
 
 class UserLoginScreen extends StatefulWidget {
   @override
@@ -9,7 +9,7 @@ class UserLoginScreen extends StatefulWidget {
 
 final GlobalKey<FormState> formKey = new GlobalKey<FormState>();
 final TextEditingController _emailController = TextEditingController(text: 'jwinterday@mail.ru');
-final TextEditingController _passwordController = TextEditingController(text: 'R%5rty');
+final TextEditingController _passwordController = TextEditingController(text: '123');
 FocusNode passwordNode = FocusNode();
 
 typedef OnLoginCallback = void Function();
@@ -28,7 +28,7 @@ String _passwordValidator(val) {
 
 
 class _UserLoginState extends State<UserLoginScreen> {
-  final LoggedUserBloc bloc = new LoggedUserBloc();
+  final GlobalInfoBloc bloc = new GlobalInfoBloc();
 
   _onLogin() {
     final form = formKey.currentState;
@@ -96,7 +96,7 @@ class _UserLoginState extends State<UserLoginScreen> {
                       children: <Widget>[
                         _submitBtn(context, onLogin: _onLogin),
                         Text(
-                          'Welcome, ${user.fullName}',
+                          'Welcome, ${user.firstName}, ${user.lastName}',
                           style: TextStyle(color: Colors.green, fontWeight: FontWeight.w800, fontSize: 20),
                         )
                       ],

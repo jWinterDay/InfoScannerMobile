@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 
-import 'package:info_scanner_mobile/global_settings.dart';
 import 'package:info_scanner_mobile/ui/left_panel_screen.dart';
-import 'package:info_scanner_mobile/blocs/logged_user_bloc.dart';//init gUserBloc for global detect
+import 'package:info_scanner_mobile/blocs/global_info_bloc.dart';
 
 class HomeScreen extends StatefulWidget {
   @override
@@ -10,9 +9,10 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeState extends State<HomeScreen> with WidgetsBindingObserver {
+  GlobalInfoBloc _bloc = new GlobalInfoBloc();
+
   //constructor
   _HomeState() {
-    
   }
 
   /*AppLifecycleState _notification;
@@ -37,8 +37,9 @@ class _HomeState extends State<HomeScreen> with WidgetsBindingObserver {
   @override
   void dispose() {
     super.dispose();
-    gUserBloc.dispose();
-    //GlobalSettings.
+
+    //get singleton of global settings instance
+    GlobalInfoBloc().dispose();
   }
 
   @override
@@ -62,7 +63,7 @@ class _HomeState extends State<HomeScreen> with WidgetsBindingObserver {
               child: FlatButton.icon(
                 label: Text('Projects'),
                 icon: Icon(Icons.compare),
-                onPressed: () => { Navigator.pushNamed(context, '/project') },
+                onPressed: () => Navigator.pushNamed(context, '/project'),
               ),
             ),
             Align(
@@ -70,7 +71,27 @@ class _HomeState extends State<HomeScreen> with WidgetsBindingObserver {
               child: FlatButton.icon(
                 label: Text('Palette'),
                 icon: Icon(Icons.color_lens),
-                onPressed: () => { Navigator.pushNamed(context, '/palette') },
+                onPressed: () => Navigator.pushNamed(context, '/palette'),
+              )
+            ),
+
+            Align(
+              alignment: Alignment.topLeft,
+              child: FlatButton.icon(
+                label: Text('Connect with websocket'),
+                icon: Icon(Icons.color_lens),
+                onPressed: () => _bloc.createWebSocketChannel()
+              )
+            ),
+
+            Align(
+              alignment: Alignment.topLeft,
+              child: FlatButton.icon(
+                label: Text('send message'),
+                icon: Icon(Icons.color_lens),
+                onPressed: () {
+                  _bloc.sendWebSocketMessage('{"name": "i am dart"}');
+                }
               )
             ),
           ],

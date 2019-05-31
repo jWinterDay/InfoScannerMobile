@@ -1,4 +1,5 @@
 import 'dart:convert' show base64, json;
+import 'dart:io';
 import 'package:intl/intl.dart';
 
 import 'package:http/http.dart' as http;
@@ -8,8 +9,7 @@ import 'package:info_scanner_mobile/models/logged_user_info.dart';
 import 'package:info_scanner_mobile/resources/constants.dart';
 import 'Exceptions.dart';
 
-final String loginUrl = 'http://192.168.1.42:3001/auth/ajax/login';
-final String refreshTokenUrl = 'http://192.168.1.42:3001/auth/ajax/refreshtoken';
+final String refreshTokenUrl = 'http://192.168.1.42:5342/jwdsrv/refresh_token';
 
 class Common {
   static final DateFormat dateFormatter = new DateFormat('yyyy.MM.dd HH:mm:ss');
@@ -47,21 +47,39 @@ class Common {
     return state;
   }
 
-  Future<LoggedUserInfo> saveTokenLocal(dynamic json) async {
-    String token = json['token'];
-    String refreshToken = json['refreshToken'];
+  ///diffTimeWithServer = token.iat - current unix time
+  Future<LoggedUserInfo> saveTokenLocal(Map<String, dynamic> obj) async {
+    String token = obj['token'];
+    String refreshToken = obj['refreshToken'];
 
     var payloadJSON = getPayloadJSON(token);
+
+    int curTimeUnixSec = (DateTime.now().millisecondsSinceEpoch / 1000).round();
     LoggedUserInfo user = LoggedUserInfo.fromMap(payloadJSON);
     user.token = token;
     user.refreshToken = refreshToken;
+    user.serverMinusCurTimeSec = payloadJSON['iat'] - curTimeUnixSec;
 
     await saveUserLocal(user);
 
     return user;
   }
 
-  getPayloadJSON(String token) {
+  Future<LoggedUserInfo> saveByRefreshTokenLocal(String nextToken, String refreshToken) async {
+    var payloadJSON = getPayloadJSON(nextToken);
+
+    int curTimeUnixSec = (DateTime.now().millisecondsSinceEpoch / 1000).round();
+    LoggedUserInfo user = LoggedUserInfo.fromMap(payloadJSON);
+    user.token = nextToken;
+    user.refreshToken = refreshToken;
+    user.serverMinusCurTimeSec = payloadJSON['iat'] - curTimeUnixSec;
+
+    await saveUserLocal(user);
+
+    return user;
+  }
+
+  Map<String, dynamic> getPayloadJSON(String token) {
     if (token == null) {
       throw AuthException('Token is null', 401);
     }
@@ -112,24 +130,26 @@ class Common {
   Future<http.Response> httpWrapper(String url, {Map<String, String> params, Map<String, String> headers, Duration duration = const Duration(seconds: 5)}) async {
     headers = headers ?? new Map();
 
+    //headers[HttpHeaders.contentTypeHeader] = 'application/json';
+    if (headers[HttpHeaders.contentTypeHeader] == null) {
+      headers[HttpHeaders.contentTypeHeader] = 'application/json';
+    }
+     
     LoggedUserInfo user = await getUserLocal();
 
     if (user != null && user.token != null) {
       var payload = getPayloadJSON(user.token);
-      if (payload == null || payload['exp'] == null) {
-        throw AuthException('Empty token info', 401);
-      }
 
-      int expUnixTimeMs = (payload['exp'] * 1000).round();//jsonwebtoken presents expire date as seconds
-      int curUnixTimeMs = DateTime.now().millisecondsSinceEpoch;
-
-      if (curUnixTimeMs > expUnixTimeMs) {
-        //try get token by refresh token
+      bool isValidTokenTime = _checkTokenValid(payload, user.serverMinusCurTimeSec);
+      if (!isValidTokenTime) {
         var rtResponse = await _httpRefreshToken();
         
         if (rtResponse.statusCode == 200) {
-          final responseJson = json.decode(rtResponse.body);
-          await saveTokenLocal(responseJson);
+          //print('>>>>>>>>>>>> ${rtResponse.body}');
+          String nextToken = rtResponse.body;
+          saveByRefreshTokenLocal(nextToken, user.refreshToken);
+          //final responseJson = json.decode(rtResponse.body);
+          //await saveTokenLocal(responseJson);
         }
 
         if (rtResponse.statusCode == 401) {
@@ -139,21 +159,35 @@ class Common {
 
       //reopen local user with updated info(if we got new data)
       user = await getUserLocal();
-      headers['Authorization'] = 'Bearer ' + user.token;
+      headers[HttpHeaders.authorizationHeader] = 'Bearer ' + user.token;
     }
 
     final response = await http.post(
       url,
-      body: params,
+      body: json.encode(params),
       headers: headers
     )
     .timeout(duration, onTimeout: () {
       throw AuthException('Timeout exception', 500);
     });
 
-    return response;
+    //test: await Future.delayed(Duration(seconds: 5));
 
-    //throw Exception('Empty user');
+    return response;
+  }
+
+  bool _checkTokenValid(Map<String, dynamic> payload, int serverMinusCurTimeSec) {
+    if (payload == null || payload['exp'] == null) {
+      throw AuthException('Empty token info', 401);
+    }
+
+    int expUnixTimeSec = payload['exp'];//jsonwebtoken presents expire date as seconds
+    int curUnixTimeSec = (DateTime.now().millisecondsSinceEpoch / 1000).round();
+
+    //print('expUnixTimeSec = $expUnixTimeSec, curUnixTimeSec = $curUnixTimeSec, serverMinusCurTimeSec = $serverMinusCurTimeSec');
+
+    //translate mobile current time to server time (current mobile time + diff)
+    return expUnixTimeSec > (curUnixTimeSec + serverMinusCurTimeSec);
   }
 
   Future<http.Response> _httpRefreshToken({Duration duration = const Duration(seconds: 5)}) async {
@@ -161,19 +195,26 @@ class Common {
 
     if (user != null && user.refreshToken != null) {
       var payload = getPayloadJSON(user.refreshToken);
+
       if (payload == null || payload['exp'] == null) {
         throw AuthException('Empty refresh token info', 401);
       }
 
-      int expUnixTimeMs = (payload['exp'] * 1000).round();//jsonwebtoken presents expire date as seconds
+      bool isValidTokenTime = _checkTokenValid(payload, user.serverMinusCurTimeSec);
+
+      if (!isValidTokenTime) {
+        throw AuthException('Invalid refresh token', 401);
+      }
+
+      /*int expUnixTimeMs = (payload['exp'] * 1000).round();//jsonwebtoken presents expire date as seconds
       int curUnixTimeMs = DateTime.now().millisecondsSinceEpoch;
 
       if (curUnixTimeMs > expUnixTimeMs) {
         throw AuthException('Invalid refresh token', 401);
-      }
+      }*/
 
       Map<String, String> headers = new Map();
-      headers['Authorization'] = 'Bearer ' + user.refreshToken;
+      headers[HttpHeaders.authorizationHeader] = 'Bearer ' + user.refreshToken;
 
       final response = await http.post(
         refreshTokenUrl,

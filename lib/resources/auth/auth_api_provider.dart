@@ -1,8 +1,7 @@
 import 'dart:convert';
 import 'package:info_scanner_mobile/models/logged_user_info.dart';
 import 'package:info_scanner_mobile/resources/common.dart';
-
-final String loginUrl = 'http://192.168.1.42:3001/auth/ajax/login';
+import 'package:info_scanner_mobile/resources/constants.dart';
 
 class AuthApiProvider {
   Common _common = new Common();
@@ -13,8 +12,8 @@ class AuthApiProvider {
       'email': email,
       'password': password,
     };
-
-    final response = await _common.httpWrapper(loginUrl, params: params);
+    
+    final response = await _common.httpWrapper(Constants.loginUrl, params: params);
 
     if (response.statusCode == 200) {
       final responseJson = json.decode(response.body);
