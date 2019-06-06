@@ -1,13 +1,25 @@
+import 'dart:convert';
+
+
 class AuthException implements Exception {
+  final int statusCode;
   final String message;
-  final int code;
 
-  AuthException(this.message, this.code);
+  //constructor
+  AuthException({this.statusCode, this.message});
 
-  String toString() {
-    return
-      '''
-        $code $message
-      ''';
-  }
+  factory AuthException.fromRawJson(String str) => AuthException.fromJson(json.decode(str));
+  String toRawJson() => json.encode(toJson());
+
+  factory AuthException.fromJson(Map<String, dynamic> json)
+    => new AuthException(
+      statusCode: json["statusCode"],
+      message: json["message"],
+    );
+  Map<String, dynamic> toJson() => {
+    "statusCode": statusCode,
+    "message": message,
+  };
+
+  String toString() => '$statusCode, $message';
 }

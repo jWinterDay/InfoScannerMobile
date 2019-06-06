@@ -2,7 +2,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:flutter/services.dart' show rootBundle;
 
 import 'package:info_scanner_mobile/resources/common_provider.dart';
-import 'package:info_scanner_mobile/models/schema_tune.dart';
+import 'package:info_scanner_mobile/models/schema_settings/schema_tune.dart';
 import 'package:info_scanner_mobile/Database.dart';// as database;
 
 

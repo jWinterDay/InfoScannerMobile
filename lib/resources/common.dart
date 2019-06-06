@@ -5,16 +5,16 @@ import 'package:intl/intl.dart';
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
-import 'package:info_scanner_mobile/models/logged_user_info.dart';
+import 'package:info_scanner_mobile/models/redux/logged_user_info.dart';
 import 'package:info_scanner_mobile/resources/constants.dart';
-import 'Exceptions.dart';
+import 'exceptions.dart';
 
 final String refreshTokenUrl = 'http://192.168.1.42:5342/jwdsrv/refresh_token';
 
 class Common {
   static final DateFormat dateFormatter = new DateFormat('yyyy.MM.dd HH:mm:ss');
 
-  static String unixDateToStr(val) {
+  static String formatUnixDate(val) {
     if (val == null) {
       return '';
     }
@@ -41,38 +41,40 @@ class Common {
     }
   }
 
-  static bool inDebug() {
-    bool state = false;
-    assert(state == true);
-    return state;
-  }
-
   ///diffTimeWithServer = token.iat - current unix time
-  Future<LoggedUserInfo> saveTokenLocal(Map<String, dynamic> obj) async {
+  Future<LoggedUserInfo> updateLoggedUserLocal(Map<String, dynamic> obj) async {
     String token = obj['token'];
     String refreshToken = obj['refreshToken'];
 
     var payloadJSON = getPayloadJSON(token);
 
-    int curTimeUnixSec = (DateTime.now().millisecondsSinceEpoch / 1000).round();
-    LoggedUserInfo user = LoggedUserInfo.fromMap(payloadJSON);
+    //int curTimeUnixSec = (DateTime.now().millisecondsSinceEpoch / 1000).round();
+    LoggedUserInfo user = LoggedUserInfo.fromJson(payloadJSON);
     user.token = token;
     user.refreshToken = refreshToken;
-    user.serverMinusCurTimeSec = payloadJSON['iat'] - curTimeUnixSec;
+    //user.serverMinusCurTimeSec = payloadJSON['iat'] - curTimeUnixSec;
 
     await saveUserLocal(user);
 
     return user;
   }
 
-  Future<LoggedUserInfo> saveByRefreshTokenLocal(String nextToken, String refreshToken) async {
+  //save user to local machine
+  Future<void> saveUserLocal(LoggedUserInfo user) async {
+    if (user == null) { return; }
+    final SharedPreferences prefs = await SharedPreferences.getInstance();
+    String userJSON = user.toRawJson();
+    await prefs.setString(Constants.prefUser, userJSON);
+  }
+
+  Future<LoggedUserInfo> saveTokenLocal(String nextToken) async {//}, String refreshToken) async {
     var payloadJSON = getPayloadJSON(nextToken);
 
     int curTimeUnixSec = (DateTime.now().millisecondsSinceEpoch / 1000).round();
-    LoggedUserInfo user = LoggedUserInfo.fromMap(payloadJSON);
+    LoggedUserInfo user = LoggedUserInfo.fromJson(payloadJSON);
     user.token = nextToken;
-    user.refreshToken = refreshToken;
-    user.serverMinusCurTimeSec = payloadJSON['iat'] - curTimeUnixSec;
+    //user.refreshToken = refreshToken;
+    //user.serverMinusCurTimeSec = payloadJSON['iat'] - curTimeUnixSec;
 
     await saveUserLocal(user);
 
@@ -81,12 +83,12 @@ class Common {
 
   Map<String, dynamic> getPayloadJSON(String token) {
     if (token == null) {
-      throw AuthException('Token is null', 401);
+      throw AuthException(statusCode: 401, message: 'Token is null');
     }
 
     List<String> segments = token.split('.');
     if (segments.length != 3) {
-      throw AuthException('Not enough or too many segments', 401);
+      throw AuthException(statusCode: 401, message: 'Not enough or too many segments');
     }
 
     String base64Url = token.split('.')[1];
@@ -105,20 +107,14 @@ class Common {
     return json.decode(payload);
   }
 
-  //save user to local machine
-  Future saveUserLocal(LoggedUserInfo user) async {
-    if (user == null) { return; }
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    String userJSON = loggedUserToJson(user);
-    await prefs.setString(Constants.prefUser, userJSON);
-  }
+
 
   //get user from local machine
   Future<LoggedUserInfo> getUserLocal() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     String userStr = prefs.getString(Constants.prefUser);
     if (userStr == null) { return null; }
-    return loggedUserFromJson(userStr);
+    return LoggedUserInfo.fromRawJson(userStr);
   }
 
   //remove user from local machine
@@ -128,7 +124,7 @@ class Common {
   }
 
   Future<http.Response> httpWrapper(String url, {Map<String, String> params, Map<String, String> headers, Duration duration = const Duration(seconds: 5)}) async {
-    headers = headers ?? new Map();
+    headers ??= new Map();
 
     //headers[HttpHeaders.contentTypeHeader] = 'application/json';
     if (headers[HttpHeaders.contentTypeHeader] == null) {
@@ -140,20 +136,20 @@ class Common {
     if (user != null && user.token != null) {
       var payload = getPayloadJSON(user.token);
 
-      bool isValidTokenTime = _checkTokenValid(payload, user.serverMinusCurTimeSec);
+      bool isValidTokenTime = _checkTokenValid(payload);//, user.serverMinusCurTimeSec);
       if (!isValidTokenTime) {
         var rtResponse = await _httpRefreshToken();
         
         if (rtResponse.statusCode == 200) {
           //print('>>>>>>>>>>>> ${rtResponse.body}');
           String nextToken = rtResponse.body;
-          saveByRefreshTokenLocal(nextToken, user.refreshToken);
+          saveTokenLocal(nextToken);//, user.refreshToken);
           //final responseJson = json.decode(rtResponse.body);
           //await saveTokenLocal(responseJson);
         }
 
         if (rtResponse.statusCode == 401) {
-          throw AuthException('Invalid refresh token info', 401);
+          throw AuthException(statusCode: 401, message: 'Invalid refresh token info');
         }
       }
 
@@ -168,7 +164,7 @@ class Common {
       headers: headers
     )
     .timeout(duration, onTimeout: () {
-      throw AuthException('Timeout exception', 500);
+      throw AuthException(statusCode: 500, message: 'Timeout exception');
     });
 
     //test: await Future.delayed(Duration(seconds: 5));
@@ -176,9 +172,9 @@ class Common {
     return response;
   }
 
-  bool _checkTokenValid(Map<String, dynamic> payload, int serverMinusCurTimeSec) {
+  bool _checkTokenValid(Map<String, dynamic> payload) {//}, int serverMinusCurTimeSec) {
     if (payload == null || payload['exp'] == null) {
-      throw AuthException('Empty token info', 401);
+      throw AuthException(statusCode: 401, message: 'Empty token info');
     }
 
     int expUnixTimeSec = payload['exp'];//jsonwebtoken presents expire date as seconds
@@ -187,7 +183,7 @@ class Common {
     //print('expUnixTimeSec = $expUnixTimeSec, curUnixTimeSec = $curUnixTimeSec, serverMinusCurTimeSec = $serverMinusCurTimeSec');
 
     //translate mobile current time to server time (current mobile time + diff)
-    return expUnixTimeSec > (curUnixTimeSec + serverMinusCurTimeSec);
+    return expUnixTimeSec > (curUnixTimeSec);// + serverMinusCurTimeSec);
   }
 
   Future<http.Response> _httpRefreshToken({Duration duration = const Duration(seconds: 5)}) async {
@@ -197,13 +193,13 @@ class Common {
       var payload = getPayloadJSON(user.refreshToken);
 
       if (payload == null || payload['exp'] == null) {
-        throw AuthException('Empty refresh token info', 401);
+        throw AuthException(statusCode: 401, message: 'Empty refresh token info');
       }
 
-      bool isValidTokenTime = _checkTokenValid(payload, user.serverMinusCurTimeSec);
+      bool isValidTokenTime = _checkTokenValid(payload);//, user.serverMinusCurTimeSec);
 
       if (!isValidTokenTime) {
-        throw AuthException('Invalid refresh token', 401);
+        throw AuthException(statusCode: 401, message: 'Invalid refresh token');
       }
 
       /*int expUnixTimeMs = (payload['exp'] * 1000).round();//jsonwebtoken presents expire date as seconds
@@ -221,12 +217,12 @@ class Common {
         headers: headers
       )
       .timeout(duration, onTimeout: () {
-        throw AuthException('Timeout exception', 401);
+        throw AuthException(statusCode: 401, message: 'Timeout exception');
       });
 
       return response;
     }
 
-    throw AuthException('Invalid refresh token info', 401);
+    throw AuthException(statusCode: 401, message: 'Invalid refresh token info');
   }
 }

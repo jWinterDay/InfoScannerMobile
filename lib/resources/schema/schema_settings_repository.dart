@@ -4,8 +4,8 @@ import 'schema_tune_db_api_provider.dart';
 import 'schema_calc_method_db_api_provider.dart';
 
 import 'package:info_scanner_mobile/resources/common_repository.dart';
-import 'package:info_scanner_mobile/models/schema_tune.dart';
-import 'package:info_scanner_mobile/models/schema_calc_method.dart';
+import 'package:info_scanner_mobile/models/schema_settings/schema_tune.dart';
+import 'package:info_scanner_mobile/models/schema_settings/schema_calc_method.dart';
 
 part 'schema_settings_repository.g.dart';
 

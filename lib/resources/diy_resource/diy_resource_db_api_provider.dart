@@ -3,7 +3,7 @@ import 'package:sqflite/sqflite.dart';
 import 'package:info_scanner_mobile/models/diy_resource.dart';
 import 'package:info_scanner_mobile/Database.dart';// as database;
 import 'package:info_scanner_mobile/resources/common.dart';
-import 'package:info_scanner_mobile/models/logged_user_info.dart';
+import 'package:info_scanner_mobile/models/redux/logged_user_info.dart';
 
 class DiyResourceDbApiProvider {
   Common _common = new Common();

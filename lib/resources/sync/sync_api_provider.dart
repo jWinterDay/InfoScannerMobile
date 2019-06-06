@@ -9,7 +9,7 @@ import 'package:info_scanner_mobile/resources/common.dart';
 import 'package:info_scanner_mobile/resources/project/project_db_api_provider.dart';
 
 import 'package:info_scanner_mobile/models/project_model.dart';
-import 'package:info_scanner_mobile/models/sync_model.dart';
+import 'package:info_scanner_mobile/models/sync/sync_model.dart';
 
 
 class SyncApiProvider {

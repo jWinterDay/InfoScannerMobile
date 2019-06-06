@@ -1,14 +1,21 @@
 import 'package:flutter/material.dart';
+//import 'package:redux/redux.dart' as redux;
+import 'package:flutter_redux/flutter_redux.dart';
+import 'package:info_scanner_mobile/actions/auth_actions.dart';
 
 import 'package:info_scanner_mobile/blocs/sync_bloc.dart';
 import 'package:info_scanner_mobile/blocs/global_info_bloc.dart';
+import 'package:info_scanner_mobile/models/redux/app_state.dart';
 
-import 'package:info_scanner_mobile/models/logged_user_info.dart';
-import 'package:info_scanner_mobile/models/sync_model.dart';
+import 'package:info_scanner_mobile/models/redux/logged_user_info.dart';
+import 'package:info_scanner_mobile/models/sync/sync_model.dart';
 import 'package:info_scanner_mobile/resources/Exceptions.dart';
+import 'package:info_scanner_mobile/resources/constants.dart';
 
 //LoggedUserBloc userBloc = new LoggedUserBloc();//object in logged_user_bloc.dart
-SyncBloc syncBloc = new SyncBloc();
+//SyncBloc syncBloc = new SyncBloc();
+
+typedef OnUserLogoutCallback = Function();
 
 class LeftPanelScreen extends StatefulWidget {
   @override
@@ -16,17 +23,53 @@ class LeftPanelScreen extends StatefulWidget {
 }
 
 class _LeftPanelState extends State<LeftPanelScreen> {
-  GlobalInfoBloc globalInfoBloc = new GlobalInfoBloc();
+  //GlobalInfoBloc globalInfoBloc = new GlobalInfoBloc();
 
   @override
   void dispose() {
     super.dispose();
 
     //userBloc.dispose();
-    syncBloc.dispose();
+    //syncBloc.dispose();
   }
 
   @override
+  Widget build(BuildContext context) {
+    return StoreConnector<AppState, OnUserLogoutCallback> (
+      converter: (store) {
+        return () => store.dispatch(logoutReduxAction());//AuthActions.logout);
+      },
+      builder: (BuildContext context, OnUserLogoutCallback callback) {
+        return Scaffold(
+          appBar: AppBar(
+            title: Text('Settings'),
+          ),
+          body: _buttonsBuild(callback),
+        );
+      },
+    );
+  }
+
+  Widget _buttonsBuild(OnUserLogoutCallback callback) {
+    return Padding(
+      padding: EdgeInsets.all(2),
+      child: Column(
+        children: <Widget>[
+          FlatButton.icon(
+            label: Text('Logout'),
+            icon: Icon(Icons.exit_to_app, color: Colors.blue,),
+            onPressed: () {
+              callback();
+              //globalInfoBloc.removeUser();
+            },
+          ),
+        ],
+      )
+    );
+  }
+}
+
+/*  @override
   Widget build(BuildContext context) {
     globalInfoBloc.getUserLocal();
 
@@ -79,7 +122,7 @@ class _LeftPanelState extends State<LeftPanelScreen> {
               label: Text('press here for relogin', style: TextStyle(fontWeight: FontWeight.w600, ),),
               onPressed: () {
                 globalInfoBloc.removeUser();
-                Navigator.pushNamed(context, '/user_login');
+                Navigator.pushNamed(context, Constants.navUserLogin);
               },
             ),
           ],
@@ -145,7 +188,7 @@ class _LeftPanelState extends State<LeftPanelScreen> {
                 FlatButton.icon(
                   label: Text('Login'),
                   icon: Icon(Icons.trending_up, color: Colors.blue),
-                  onPressed: () { Navigator.pushNamed(context, '/user_login'); },
+                  onPressed: () => Navigator.pushNamed(context, Constants.navUserLogin),
                 ),
               ],
             ),
@@ -191,4 +234,4 @@ class _LeftPanelState extends State<LeftPanelScreen> {
           ),
       );
   }
-}
+*/

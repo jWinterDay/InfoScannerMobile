@@ -1,8 +1,172 @@
 import 'package:flutter/material.dart';
-import 'package:info_scanner_mobile/models/logged_user_info.dart';
-import 'package:info_scanner_mobile/blocs/global_info_bloc.dart';
+import 'package:flutter_redux/flutter_redux.dart';
+
+import 'package:info_scanner_mobile/actions/auth_actions.dart';
+import 'package:info_scanner_mobile/blocs/auth_bloc.dart';
+import 'package:info_scanner_mobile/models/auth/auth_model.dart';
+import 'package:info_scanner_mobile/models/redux/app_state.dart';
+import 'package:info_scanner_mobile/models/redux/logged_user_info.dart';
+import 'package:info_scanner_mobile/ui/components/persistent_footer.dart';
+
+
+typedef OnUserLoginCallback = Function();
 
 class UserLoginScreen extends StatefulWidget {
+  @override
+  _UserLoginState createState() => _UserLoginState();
+}
+
+class _UserLoginState extends State<UserLoginScreen> {
+  final AuthBloc _bloc = new AuthBloc();
+
+  final GlobalKey<FormState> _formKey = new GlobalKey<FormState>();
+  final FocusNode _passwordNode = FocusNode();
+  final FocusNode _emailNode = FocusNode();
+  
+
+  @override
+  void dispose() {
+    _bloc.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Row(
+          children: <Widget>[
+            Text('Login'),
+          ],
+        )
+      ),
+      persistentFooterButtons: <Widget>[
+        persistentFooter(),
+      ],
+      body: SafeArea(
+        child: SingleChildScrollView(
+          child: Padding(
+            padding: EdgeInsets.all(10),
+            child: StreamBuilder(
+              stream: _bloc.resultStream,
+              builder: (context, AsyncSnapshot<LoggedUserInfo> snapshot) {
+                return Column(
+                  children: <Widget>[
+                    _formFields(context, snapshot),
+                    _submitBtn(context, snapshot),
+                    _loginResult(context, snapshot),
+                  ],
+                );
+              }
+            )
+          )
+        )
+      )
+    );
+  }
+
+  Widget _formFields(BuildContext context, AsyncSnapshot<LoggedUserInfo> snapshot) {
+    bool isLoading = snapshot.hasData && snapshot.data.isLoading;
+    bool isEnabled = !isLoading;
+
+    var captionStyle = TextStyle(fontSize: 18.0, color: Colors.black, fontWeight: FontWeight.bold);
+
+    return Form(
+      key: _formKey,
+      child: Column(
+        children: <Widget>[
+          //email
+          Align(
+            alignment: Alignment.topLeft,
+            child: Text('EMail', style: captionStyle),
+          ),
+          TextFormField(
+            enabled: isEnabled,
+            maxLength: 30,
+            focusNode: _emailNode,
+            controller: _bloc.emailController,
+            style: Theme.of(context).textTheme.headline,
+            decoration: InputDecoration(
+              icon: Icon(Icons.email),
+              hintStyle: TextStyle(fontStyle: FontStyle.italic),
+              hintText: 'Use your site name'
+            ),
+            validator: _bloc.emailValidator,
+            autovalidate: true,
+            //autofocus: true,
+            keyboardType: TextInputType.emailAddress,
+            onFieldSubmitted: (email) {
+              //FocusScope.of(context).requestFocus(_passwordNode);
+            }
+          ),
+          //password
+          Align(
+            alignment: Alignment.topLeft,
+            child: Text('Password', style: captionStyle),
+          ),
+          TextFormField(
+            enabled: isEnabled,
+            focusNode: _passwordNode,
+            maxLength: 20,
+            controller: _bloc.passwordController,
+            style: Theme.of(context).textTheme.headline,
+            decoration: InputDecoration(
+              icon: Icon(Icons.security),
+              hintStyle: TextStyle(fontStyle: FontStyle.italic),
+              hintText: 'Your password'
+            ),
+            obscureText: true,
+            autovalidate: true,
+            textInputAction: TextInputAction.go,
+            validator: _bloc.passwordValidator,
+            onFieldSubmitted: (psw) {
+              //onLogin();
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _submitBtn(BuildContext context, AsyncSnapshot<LoggedUserInfo> snapshot) {
+    bool isLoading = snapshot.hasData && snapshot.data.isLoading;
+    var color = isLoading ? Colors.red : Colors.green;
+
+    return Align(
+      alignment: Alignment.topLeft,
+        child: FlatButton.icon(
+          label: Text('Login', style: TextStyle(fontSize: 16),),
+          icon: Icon(Icons.play_circle_outline, color: color),
+          onPressed: isLoading ? null : _bloc.login
+        )
+    );
+  }
+
+  Widget _loginResult(BuildContext context, AsyncSnapshot<LoggedUserInfo> snapshot) {
+    if (snapshot.hasData) {
+      LoggedUserInfo userInfo = snapshot.data;
+      bool isLoading = userInfo.isLoading;
+
+      if (isLoading) {
+        return Center(child: CircularProgressIndicator());
+      }
+
+      if (userInfo.error != null) {
+        return Text(userInfo.error.toString(), style: TextStyle(color: Colors.red, fontSize: 16, fontWeight: FontWeight.w800));
+      }
+
+      String infoStr = 'Logged as ${userInfo.firstName}, ${userInfo.lastName}';
+
+      return Text(infoStr, style: TextStyle(color: Colors.lightGreen, fontSize: 20, fontWeight: FontWeight.w800));
+    } else if (snapshot.hasError) {
+      return Text(snapshot.error.toString());
+    }
+
+    return Container();
+  }
+}
+
+/*class UserLoginScreen extends StatefulWidget {
   @override
   _UserLoginState createState() => _UserLoginState();
 }
@@ -39,17 +203,7 @@ class _UserLoginState extends State<UserLoginScreen> {
     String email = _emailController.text;
     String password = _passwordController.text;
 
-    /*var tt = Navigator.of(context).push(PageRouteBuilder(
-      opaque: false,
-      pageBuilder: (BuildContext context, _, __) =>
-        RedeemConfirmationScreen()
-      )
-    );*/
-
-    //Navigator.of(context).push(TutorialOverlay());
-
     bloc.login(email, password);
-      //Navigator.pop(context);
   }
 
   @override
@@ -72,7 +226,7 @@ class _UserLoginState extends State<UserLoginScreen> {
         )
       ),
       body: Padding(
-        padding: EdgeInsets.all(15),
+        padding: EdgeInsets.all(5),
         child: ListView(
           children: <Widget>[
             _loginForm(context, onLogin: _onLogin),
@@ -84,7 +238,7 @@ class _UserLoginState extends State<UserLoginScreen> {
                 if (snapshot.hasData) {
                   LoggedUserInfo user = snapshot.data;
 
-                  if (user.inFetchState) {
+                  if (user.isLoading) {
                     return Row(
                       children: <Widget>[
                         _submitBtn(context, onLogin: null),
@@ -187,111 +341,4 @@ Widget _submitBtn(BuildContext context, {@required OnLoginCallback onLogin}) {
           onPressed: onLogin
         ),
     );
-}
-
-/////////////
-/*class TutorialOverlay extends ModalRoute<void> {
-  @override
-  Duration get transitionDuration => Duration(milliseconds: 500);
-
-  @override
-  bool get opaque => false;
-
-  @override
-  bool get barrierDismissible => false;
-
-  @override
-  Color get barrierColor => Colors.black.withOpacity(0.5);
-
-  @override
-  String get barrierLabel => null;
-
-  @override
-  bool get maintainState => true;
-
-  @override
-  Widget buildPage(
-      BuildContext context,
-      Animation<double> animation,
-      Animation<double> secondaryAnimation,
-      ) {
-    // This makes sure that text and other content follows the material style
-    return Material(
-      type: MaterialType.transparency,
-      // make sure that the overlay content is not cut off
-      child: SafeArea(
-        child: _buildOverlayContent(context),
-      ),
-    );
-  }
-
-  Widget _buildOverlayContent(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: <Widget>[
-          Text(
-            'This is a nice overlay',
-            style: TextStyle(color: Colors.white, fontSize: 30.0),
-          ),
-          RaisedButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('Dismiss'),
-          )
-        ],
-      ),
-    );
-  }
-
-  @override
-  Widget buildTransitions(
-      BuildContext context, Animation<double> animation, Animation<double> secondaryAnimation, Widget child) {
-    // You can add your own animations for the overlay content
-    return FadeTransition(
-      opacity: animation,
-      child: ScaleTransition(
-        scale: animation,
-        child: child,
-      ),
-    );
-  }
-}*/
-
-/*class RedeemConfirmationScreen extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: Colors.white.withOpacity(0.85),
-      body: Center(
-        child: RaisedButton(
-          child: Text('close'),//Center(child: CircularProgressIndicator()),//  Text('close'),
-          onPressed: () => Navigator.pop(context)
-        ),
-      )
-    );
-  }
-}*/
-
-
-/*void showDialogSingleButton(BuildContext context, String title, String message, String buttonLabel) {
-  // flutter defined function
-  showDialog(
-    context: context,
-    builder: (BuildContext context) {
-      // return object of type Dialog
-      return AlertDialog(
-        title: new Text(title),
-        content: new Text(message),
-        actions: <Widget>[
-          // usually buttons at the bottom of the dialog
-          new FlatButton(
-            child: new Text(buttonLabel),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-        ],
-      );
-    },
-  );
 }*/

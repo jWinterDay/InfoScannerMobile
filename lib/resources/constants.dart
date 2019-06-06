@@ -2,23 +2,20 @@ import 'dart:core';
 
 
 abstract class Constants {
-  static final String prefUser = 'user';
+  //navigator
+  static const String navRoot = '/';
+  static const String navProject = '/project';
+  static const String navPalette = '/palette';
+  static const String navUserLogin = '/user_login';
 
-  static final String prefUserUserId = 'user.user_id';
-  static final String prefUserFirstName = 'user.last_name';
-  static final String prefUserLastName = 'user.last_name';
-  static final String prefUserFullName = 'user.full_name';
-  
-  static final String prefUserEmail = 'user.email';
-  static final String prefUserToken = 'user.token';
-  static final String prefUserRefreshToken = 'user.refresh_token';
-  static final String prefUserRoles = 'user.roles';
+  //pref
+  static const String prefUser = 'user';
 
   //urls
-  static final String scheme = 'http';
-  static final String wsScheme = 'ws';
-  static final String host = '192.168.1.42';
-  static final int port = 5342;
+  static const String scheme = 'http';
+  static const String wsScheme = 'ws';
+  static const String host = '192.168.1.42';
+  static const int port = 5342;
 
   static final String loginUrl = new Uri(scheme: scheme, host: host, port: port, path: '/jwdsrv/login').toString();
   static final String syncAllUrl = new Uri(scheme: scheme, host: host, port: port, path: '/jwdsrv/sync').toString();

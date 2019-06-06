@@ -221,7 +221,7 @@ Widget showAddInfo(Project project) {
           ListTile(
             dense: true,
             leading: Text('begin date'),
-            title: Text(Common.unixDateToStr(project?.unixBeginDate), style: ts,),
+            title: Text(Common.formatUnixDate(project?.unixBeginDate), style: ts,),
           ),
           ListTile(
             dense: true,
@@ -246,7 +246,7 @@ Widget showAddInfo(Project project) {
           ListTile(
             dense: true,
             leading: Text('last change date'),
-            title: Text(Common.unixDateToStr(project?.unixLastChangeDate), style: ts,),
+            title: Text(Common.formatUnixDate(project?.unixLastChangeDate), style: ts,),
           ),
         ],
       ),

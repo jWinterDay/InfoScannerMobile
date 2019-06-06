@@ -8,7 +8,7 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/status.dart' as status;
 
 import 'package:info_scanner_mobile/resources/auth/auth_repository.dart';
-import 'package:info_scanner_mobile/models/logged_user_info.dart';
+import 'package:info_scanner_mobile/models/redux/logged_user_info.dart';
 
 
 class GlobalInfoBloc {
@@ -64,11 +64,11 @@ class GlobalInfoBloc {
   //first, create in progress user (LoggedUserInfo user = LoggedUserInfo.inprogress();) with status 'inprogress'
   //when we receive http answer status is 'done'
   login(String email, String password) async {
-    LoggedUserInfo user = LoggedUserInfo.inprogress();
+    LoggedUserInfo user = LoggedUserInfo.loading();
     
     inSink.add(user);
     try {
-      user = await _loginRepository.login(email, password);
+      user = null;// await _loginRepository.login(email, password);
       inSink.add(user);
     } catch(err) {
       inSink.addError(err);
@@ -76,12 +76,12 @@ class GlobalInfoBloc {
   }
 
   getUserLocal() async {
-    LoggedUserInfo user = await _loginRepository.getUserLocal();
+    LoggedUserInfo user = null;//await _loginRepository.getUserLocal();
     inSink.add(user);
   }
 
   removeUser() async {
-    await _loginRepository.removeUserLocal();
+    //await _loginRepository.removeUserLocal();
     await getUserLocal();
   }
 

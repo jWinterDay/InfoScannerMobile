@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:info_scanner_mobile/blocs/schema_settings_bloc.dart';
 
 import 'package:info_scanner_mobile/models/project_model.dart';
-import 'package:info_scanner_mobile/models/schema_tune.dart';
-import 'package:info_scanner_mobile/models/schema_size.dart';
+import 'package:info_scanner_mobile/models/schema_settings/schema_tune.dart';
+import 'package:info_scanner_mobile/models/schema_settings/schema_size.dart';
 
 class SchemaScreen extends StatefulWidget {
   final Project project;

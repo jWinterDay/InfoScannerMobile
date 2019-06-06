@@ -1,25 +1,32 @@
 import 'dart:convert';
-import 'package:info_scanner_mobile/models/logged_user_info.dart';
+import 'package:info_scanner_mobile/models/auth/auth_model.dart';
+import 'package:info_scanner_mobile/models/redux/logged_user_info.dart';
 import 'package:info_scanner_mobile/resources/common.dart';
 import 'package:info_scanner_mobile/resources/constants.dart';
+import 'package:info_scanner_mobile/resources/exceptions.dart' as exc;
 
 class AuthApiProvider {
   Common _common = new Common();
   
   //http login
-  Future<LoggedUserInfo> login(String email, String password) async {
+  Future<LoggedUserInfo> login(AuthModel authModel) async {
     Map<String, String> params = {
-      'email': email,
-      'password': password,
+      'email': authModel.email,
+      'password': authModel.password,
     };
     
     final response = await _common.httpWrapper(Constants.loginUrl, params: params);
 
     if (response.statusCode == 200) {
       final responseJson = json.decode(response.body);
-      return await _common.saveTokenLocal(responseJson);
+      return await _common.updateLoggedUserLocal(responseJson);
     }
-    
-    throw '${response.statusCode} ${response.body}';
+
+    exc.AuthException authException = exc.AuthException.fromRawJson(response.body);
+    throw authException;
+  }
+
+  Future<void> logout() async {
+    _common.removeUserLocal();
   }
 }
