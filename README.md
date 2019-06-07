@@ -6,6 +6,7 @@ Dart + Flutter project for Android and IOS mobiles
  Both of apps can synchronize to each other and can store local own data
 
 <<<<<<< HEAD
+<<<<<<< HEAD
 ## Getting Started
 
 for generating models I used this site: https://app.quicktype.io/#l=dart
@@ -14,3 +15,6 @@ use kiwi.dart for DI. To generate Injector class use kiwi_generator(console: flu
 =======
 ![Screenshot](InfoScannerMobile.gif)
 >>>>>>> a8d3a5a... + gif edit link
+=======
+![Screenshot](InfoScannerMobile.gif)
+>>>>>>> github/master
