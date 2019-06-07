@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:info_scanner_mobile/ui/components/footer_common_info.dart';
 import 'package:tuple/tuple.dart';
 import 'dart:core';
 import 'dart:ui';
@@ -50,11 +51,12 @@ class _PaletteListState extends State<PaletteListScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'Palette',
-          style: TextStyle(color: Colors.black),
-        ),
+        title: Text('Palette'),
       ),
+      bottomNavigationBar: footerCommonInfo(isNavigator: true),
+      //persistentFooterButtons: <Widget>[
+      //  footerCommonInfo(),
+      //],
       body: Column(
         children: <Widget>[
           //search

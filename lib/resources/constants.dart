@@ -2,6 +2,8 @@ import 'dart:core';
 
 
 abstract class Constants {
+  static const bool isProduction = false;
+
   //navigator
   static const String navRoot = '/';
   static const String navProject = '/project';

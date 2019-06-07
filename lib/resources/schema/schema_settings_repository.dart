@@ -1,3 +1,4 @@
+import 'package:info_scanner_mobile/resources/constants.dart';
 import 'package:kiwi/kiwi.dart';
 
 import 'schema_tune_db_api_provider.dart';
@@ -20,16 +21,15 @@ abstract class SchemaSettingsInjector {
   void production();
 }
 
-class SchemaSettingsRepository extends CommonRepository {
+class SchemaSettingsRepository {
   SchemaSettingsRepository() {
     print('SchemaSettingsRepository constructor');
   }
 
   void setup() {
     _$SchemaSettingsInjector injector = new _$SchemaSettingsInjector();
-
-    print('setup super.isProduction = ${super.isProduction}');
-    if (super.isProduction) {
+    
+    if (Constants.isProduction) {
       injector.production();
     } else {
       injector.development();

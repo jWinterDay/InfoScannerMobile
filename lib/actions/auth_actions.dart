@@ -1,4 +1,3 @@
-import 'package:info_scanner_mobile/models/auth/auth_model.dart';
 import 'package:redux/redux.dart';
 import 'package:redux_thunk/redux_thunk.dart';
 

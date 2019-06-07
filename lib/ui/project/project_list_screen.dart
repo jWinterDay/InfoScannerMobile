@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:info_scanner_mobile/ui/components/footer_common_info.dart';
 import 'package:intl/intl.dart';
 
 import 'package:info_scanner_mobile/models/project_model.dart';
@@ -71,15 +72,16 @@ class _ProjectListState extends State<ProjectListScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(
-          'My projects',
-          style: TextStyle(color: Colors.black),
-        ),
+        title: Text('My projects'),
         actions: <Widget>[
           IconButton(icon: Icon(Icons.sync), onPressed: refreshProjects),
           IconButton(icon: Icon(Icons.delete), onPressed: removeAllProjects),
         ],
       ),
+      bottomNavigationBar: footerCommonInfo(isNavigator: true),
+      //persistentFooterButtons: <Widget>[
+      //  footerCommonInfo(),
+      //],
       body: StreamBuilder(
         stream: bloc.allProjectsStream,
         builder: (context, AsyncSnapshot<List<Project>> snapshot) {

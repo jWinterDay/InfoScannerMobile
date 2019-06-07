@@ -51,7 +51,6 @@ class AuthBloc {
   }
 
   login() {
-    
     _authController.sink.add(null);
   }
 

@@ -6,7 +6,7 @@ import 'package:info_scanner_mobile/blocs/auth_bloc.dart';
 import 'package:info_scanner_mobile/models/auth/auth_model.dart';
 import 'package:info_scanner_mobile/models/redux/app_state.dart';
 import 'package:info_scanner_mobile/models/redux/logged_user_info.dart';
-import 'package:info_scanner_mobile/ui/components/persistent_footer.dart';
+import 'package:info_scanner_mobile/ui/components/footer_common_info.dart';
 
 
 typedef OnUserLoginCallback = Function();
@@ -34,15 +34,12 @@ class _UserLoginState extends State<UserLoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Row(
-          children: <Widget>[
-            Text('Login'),
-          ],
-        )
+        title: Text('Login'),
       ),
-      persistentFooterButtons: <Widget>[
-        persistentFooter(),
-      ],
+      bottomNavigationBar: footerCommonInfo(isNavigator: false),
+      //persistentFooterButtons: <Widget>[
+      //  footerCommonInfo(isNavigator: false),
+      //],
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(

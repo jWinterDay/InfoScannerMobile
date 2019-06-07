@@ -167,6 +167,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.5.3"
+  flutter_redux_dev_tools:
+    dependency: "direct main"
+    description:
+      name: flutter_redux_dev_tools
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.3.0"
   flutter_stetho:
     dependency: "direct main"
     description:
@@ -375,6 +382,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "3.0.0"
+  redux_dev_tools:
+    dependency: "direct main"
+    description:
+      name: redux_dev_tools
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.4.0"
   redux_thunk:
     dependency: "direct main"
     description:

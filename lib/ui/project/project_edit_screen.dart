@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:info_scanner_mobile/models/project_model.dart';
 import 'package:info_scanner_mobile/blocs/projects_bloc.dart';
 import 'package:info_scanner_mobile/resources/common.dart';
+import 'package:info_scanner_mobile/ui/components/footer_common_info.dart';
 
 
 class ProjectEditScreen extends StatefulWidget {
@@ -87,7 +88,10 @@ class _ProjectEditState extends State<ProjectEditScreen> {
             IconButton(icon: Icon(Icons.delete), onPressed: removeProjectCallback),
           ],
         ),
-
+        bottomNavigationBar: footerCommonInfo(isNavigator: true),
+        //persistentFooterButtons: <Widget>[
+        //  footerCommonInfo(),
+        //],
         body: SingleChildScrollView(
           child: Padding(
             padding: EdgeInsets.all(15),
