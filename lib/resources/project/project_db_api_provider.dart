@@ -2,25 +2,14 @@ import 'package:sqflite/sqflite.dart';
 import 'package:flutter/foundation.dart';
 
 import 'package:info_scanner_mobile/models/project_model.dart';
-import 'package:info_scanner_mobile/Database.dart';// as database;
-import 'package:device_id/device_id.dart';
+import 'package:info_scanner_mobile/Database.dart';
 
 
 class ProjectDbApiProvider {
-  String _deviceId = 'Unknown';
+  final String deviceId;
 
-  //constructor
-  ProjectDbApiProvider() {
-    initDeviceId();
-  }
+  ProjectDbApiProvider(this.deviceId);
 
-  Future<void> initDeviceId() async {
-    try {
-      _deviceId = await DeviceId.getID;
-    } catch(err) {
-
-    }
-  }
 
   Future<List<Project>> getProjects() async {
     Database db = await DBProvider.instance.database;
@@ -63,7 +52,7 @@ class ProjectDbApiProvider {
       insert into project(name, note, unix_begin_date, device_guid, is_own_project, last_operation)
       values(?, ?, ?, ?, 1, 'I');
       """,
-      [name, project.note, dt, _deviceId]
+      [name, project.note, dt, deviceId]
     );
 
     return lastId;

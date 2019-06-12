@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 
-import 'package:info_scanner_mobile/actions/auth_actions.dart';
 import 'package:info_scanner_mobile/blocs/auth_bloc.dart';
-import 'package:info_scanner_mobile/models/auth/auth_model.dart';
-import 'package:info_scanner_mobile/models/redux/app_state.dart';
 import 'package:info_scanner_mobile/models/redux/logged_user_info.dart';
 import 'package:info_scanner_mobile/ui/components/footer_common_info.dart';
 
@@ -37,9 +34,6 @@ class _UserLoginState extends State<UserLoginScreen> {
         title: Text('Login'),
       ),
       bottomNavigationBar: footerCommonInfo(isNavigator: false),
-      //persistentFooterButtons: <Widget>[
-      //  footerCommonInfo(isNavigator: false),
-      //],
       body: SafeArea(
         child: SingleChildScrollView(
           child: Padding(

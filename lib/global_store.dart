@@ -10,6 +10,7 @@ import 'package:info_scanner_mobile/reducers/app_reducer.dart';
 DevToolsStore<AppState> globalStore;
 
 Future<Store<AppState>> createStore() async {
+  print('---global store init---');
   AppState state = await AppState.initAsync();
 
   globalStore = new DevToolsStore<AppState>(

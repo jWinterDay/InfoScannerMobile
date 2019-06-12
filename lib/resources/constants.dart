@@ -2,7 +2,7 @@ import 'dart:core';
 
 
 abstract class Constants {
-  static const bool isProduction = false;
+  static const bool isProduction = bool.fromEnvironment('dart.vm.product');
 
   //navigator
   static const String navRoot = '/';
@@ -12,14 +12,4 @@ abstract class Constants {
 
   //pref
   static const String prefUser = 'user';
-
-  //urls
-  static const String scheme = 'http';
-  static const String wsScheme = 'ws';
-  static const String host = '192.168.1.42';
-  static const int port = 5342;
-
-  static final String loginUrl = new Uri(scheme: scheme, host: host, port: port, path: '/jwdsrv/login').toString();
-  static final String syncAllUrl = new Uri(scheme: scheme, host: host, port: port, path: '/jwdsrv/sync').toString();
-  static final String wsUrl = new Uri(scheme: wsScheme, host: host, port: port, path: '/jwdsrv/name').toString();
 }

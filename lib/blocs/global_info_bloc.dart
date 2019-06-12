@@ -1,4 +1,4 @@
-import 'dart:io';
+/*import 'dart:io';
 
 import 'package:info_scanner_mobile/resources/constants.dart';
 import 'package:rxdart/rxdart.dart';
@@ -22,7 +22,6 @@ class GlobalInfoBloc {
   //websocket stream
   IOWebSocketChannel _channel;
   WebSocket _socket;
-  //WebSocketSink get wsInSink => _channel.sink;
   Stream get wsStream => _channel.stream;
 
 
@@ -89,4 +88,4 @@ class GlobalInfoBloc {
     if (_loggedUserFetcher != null) await _loggedUserFetcher.close();
     if (_socket != null) await _socket.close();
   }
-}
+}*/

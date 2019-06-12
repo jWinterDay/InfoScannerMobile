@@ -1,7 +1,7 @@
 import 'dart:convert' show base64, json;
 import 'dart:io';
+import 'package:info_scanner_mobile/global_injector.dart';
 import 'package:intl/intl.dart';
-
 import 'package:http/http.dart' as http;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -9,10 +9,11 @@ import 'package:info_scanner_mobile/models/redux/logged_user_info.dart';
 import 'package:info_scanner_mobile/resources/constants.dart';
 import 'exceptions.dart';
 
-final String refreshTokenUrl = 'http://192.168.1.42:5342/jwdsrv/refresh_token';
 
 class Common {
   static final DateFormat dateFormatter = new DateFormat('yyyy.MM.dd HH:mm:ss');
+
+  final String host = globalInjector.get<String>(key: 'host');
 
   static String formatUnixDate(val) {
     if (val == null) {
@@ -40,6 +41,7 @@ class Common {
         throw Exception('Unknown format');
     }
   }
+
 
   ///diffTimeWithServer = token.iat - current unix time
   Future<LoggedUserInfo> updateLoggedUserLocal(Map<String, dynamic> obj) async {
@@ -124,6 +126,7 @@ class Common {
   }
 
   Future<http.Response> httpWrapper(String url, {Map<String, String> params, Map<String, String> headers, Duration duration = const Duration(seconds: 5)}) async {
+    print('url = $url');
     headers ??= new Map();
 
     //headers[HttpHeaders.contentTypeHeader] = 'application/json';
@@ -213,8 +216,8 @@ class Common {
       headers[HttpHeaders.authorizationHeader] = 'Bearer ' + user.refreshToken;
 
       final response = await http.post(
-        refreshTokenUrl,
-        headers: headers
+        host + '/refresh_token',
+        headers: headers,
       )
       .timeout(duration, onTimeout: () {
         throw AuthException(statusCode: 401, message: 'Timeout exception');

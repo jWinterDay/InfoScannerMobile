@@ -1,10 +1,8 @@
 import 'package:http/http.dart' as http;
-import 'package:info_scanner_mobile/resources/Exceptions.dart';
-import 'package:info_scanner_mobile/resources/constants.dart';
 import 'dart:convert';
 import 'package:sqflite/sqflite.dart';
 
-import 'package:info_scanner_mobile/Database.dart';// as database;
+import 'package:info_scanner_mobile/Database.dart';
 import 'package:info_scanner_mobile/resources/common.dart';
 import 'package:info_scanner_mobile/resources/project/project_db_api_provider.dart';
 
@@ -14,19 +12,16 @@ import 'package:info_scanner_mobile/models/sync/sync_model.dart';
 
 class SyncApiProvider {
   final Common _common = new Common();
-  ProjectDbApiProvider projectDbApiProvider = new ProjectDbApiProvider();
+  ProjectDbApiProvider projectDbApiProvider;
+  final String host;
 
-  //http sync
+  SyncApiProvider(this.projectDbApiProvider, this.host);
+
+
   Future<SyncModel> syncAll() async {
     http.Response response;
 
-    //try {
-      response = await _common.httpWrapper(Constants.syncAllUrl);
-    //} catch(ex) {
-      //throw new AuthException(message, code)
-      //print('>>>>>>>>>>>>>> $ex');
-    //}
-    
+    response = await _common.httpWrapper(host + '/sync');
 
     if (response.statusCode == 200) {
       final responseJSON = json.decode(response.body);

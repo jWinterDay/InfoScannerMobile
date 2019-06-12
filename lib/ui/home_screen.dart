@@ -4,7 +4,6 @@ import 'package:flutter_redux_dev_tools/flutter_redux_dev_tools.dart';
 import 'package:info_scanner_mobile/resources/constants.dart';
 import 'package:info_scanner_mobile/ui/components/footer_common_info.dart';
 import 'package:info_scanner_mobile/ui/left_panel_screen.dart';
-
 import 'package:info_scanner_mobile/global_store.dart';
 
 
@@ -26,9 +25,6 @@ class _HomeState extends State<HomeScreen> {
       endDrawer: Constants.isProduction ? null : ReduxDevTools(globalStore),
       body: _buildHomeBody(),
       bottomNavigationBar: footerCommonInfo(isNavigator: true),
-      //persistentFooterButtons: <Widget>[
-      //  footerCommonInfo(),
-      //],
     );
   }
 

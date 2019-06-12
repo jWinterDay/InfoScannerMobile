@@ -1,10 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_redux/flutter_redux.dart';
 import 'package:info_scanner_mobile/resources/constants.dart';
-import 'package:redux/redux.dart';
 import 'package:flutter_stetho/flutter_stetho.dart';
-
-//import 'package:kiwi/kiwi.dart' as kiwi;
 
 import 'models/redux/app_state.dart';
 import 'ui/project/project_list_screen.dart';
@@ -12,14 +9,13 @@ import 'ui/home_screen.dart';
 import 'ui/palette/palette_list_screen.dart';
 import 'ui/auth/user_login_screen.dart';
 import 'global_store.dart' as gStore;
-
-//
-import 'package:redux_dev_tools/redux_dev_tools.dart';
-import 'package:flutter_redux_dev_tools/flutter_redux_dev_tools.dart';
+import 'global_injector.dart' as gInjector;
 
 
 void main() async {
   //Stetho.initialize();
+
+  await gInjector.initialise();
 
   await gStore.createStore();
 

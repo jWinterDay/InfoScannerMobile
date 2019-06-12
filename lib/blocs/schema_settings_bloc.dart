@@ -1,6 +1,5 @@
 import 'package:rxdart/rxdart.dart';
 import 'dart:async';
-import 'package:kiwi/kiwi.dart';
 
 import 'package:info_scanner_mobile/resources/schema/schema_settings_repository.dart';
 import 'package:info_scanner_mobile/models/schema_settings/schema_tune.dart';
