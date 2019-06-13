@@ -126,7 +126,7 @@ class Common {
   }
 
   Future<http.Response> httpWrapper(String url, {Map<String, String> params, Map<String, String> headers, Duration duration = const Duration(seconds: 5)}) async {
-    print('url = $url');
+    //print('url = $url');
     headers ??= new Map();
 
     //headers[HttpHeaders.contentTypeHeader] = 'application/json';
@@ -216,7 +216,7 @@ class Common {
       headers[HttpHeaders.authorizationHeader] = 'Bearer ' + user.refreshToken;
 
       final response = await http.post(
-        host + '/refresh_token',
+        host + 'refresh_token',
         headers: headers,
       )
       .timeout(duration, onTimeout: () {

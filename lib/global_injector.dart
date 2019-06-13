@@ -1,5 +1,6 @@
 import 'package:flutter_simple_dependency_injection/injector.dart';
 import 'package:device_id/device_id.dart';
+import 'dart:io' show Platform;
 
 import 'package:info_scanner_mobile/resources/auth/auth_api_provider.dart';
 import 'package:info_scanner_mobile/resources/constants.dart';
@@ -12,6 +13,14 @@ Injector globalInjector;
 
 
 Future<Injector> initialise() async {
+  print(Platform.localeName);
+  print(Platform.localHostname);
+  print(Platform.numberOfProcessors);
+  print(Platform.operatingSystemVersion);
+  print(Platform.packageConfig);
+  print(Platform.resolvedExecutable);
+  print(Platform.version);
+
   globalInjector = Injector.getInjector();
 
   bool isProd = Constants.isProduction;
@@ -20,7 +29,7 @@ Future<Injector> initialise() async {
   print('---injector init for $env---');
 
   //host
-  globalInjector.map<String>((injector) => isProd ? 'http://192.168.0.107:5342/jwdsrv' : 'http://192.168.0.116:5342/jwdsrv', key: 'host');
+  globalInjector.map<String>((injector) => isProd ? 'http://192.168.0.107:5342/jwdsrv/' : 'http://192.168.0.116:5342/jwdsrv/', key: 'host');
   
   //device id
   String deviceId = 'Unknown';

@@ -44,6 +44,7 @@ dependencies:
   redux_thunk: ^0.2.1
   flutter_redux_dev_tools: ^0.3.0
   redux_dev_tools: ^0.4.0
+  mock_web_server: ^4.0.0
 
 
   # The following adds the Cupertino Icons font to your application.

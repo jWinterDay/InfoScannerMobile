@@ -21,7 +21,7 @@ class SyncApiProvider {
   Future<SyncModel> syncAll() async {
     http.Response response;
 
-    response = await _common.httpWrapper(host + '/sync');
+    response = await _common.httpWrapper(host + 'sync');
 
     if (response.statusCode == 200) {
       final responseJSON = json.decode(response.body);

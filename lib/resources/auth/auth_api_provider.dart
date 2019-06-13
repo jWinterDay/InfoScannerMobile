@@ -24,15 +24,26 @@ class AuthApiProvider {
       'password': authModel.password,
     };
     
-    final response = await _common.httpWrapper(host + '/login', params: params);
+    final response = await _common.httpWrapper(host + 'login', params: params);
 
-    if (response.statusCode == 200) {
-      final responseJson = json.decode(response.body);
+    int statusCode = response.statusCode;
+    String body = response.body;
+
+    if (statusCode == 200) {
+      final responseJson = json.decode(body);
       return await _common.updateLoggedUserLocal(responseJson);
     }
 
-    exc.AuthException authException = exc.AuthException.fromRawJson(response.body);
-    throw authException;
+    //was exception
+    exc.AuthException responseException;
+
+    if (body == null || body.trim() == '') {
+      responseException = exc.AuthException(statusCode: statusCode, message: 'unknown exception');
+    } else {
+      responseException = exc.AuthException(statusCode: statusCode, message: body);//exc.AuthException.fromRawJson(body);
+    }
+
+    throw responseException;
   }
 
   Future<void> logout() async {
