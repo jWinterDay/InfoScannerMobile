@@ -13,13 +13,7 @@ Injector globalInjector;
 
 
 Future<Injector> initialise() async {
-  print(Platform.localeName);
-  print(Platform.localHostname);
-  print(Platform.numberOfProcessors);
-  print(Platform.operatingSystemVersion);
-  print(Platform.packageConfig);
-  print(Platform.resolvedExecutable);
-  print(Platform.version);
+  //print(Platform.operatingSystemVersion);
 
   globalInjector = Injector.getInjector();
 
