@@ -126,7 +126,7 @@ class Common {
   }
 
   Future<http.Response> httpWrapper(String url, {Map<String, String> params, Map<String, String> headers, Duration duration = const Duration(seconds: 5)}) async {
-    //print('url = $url');
+    print('url = $url');
     headers ??= new Map();
 
     //headers[HttpHeaders.contentTypeHeader] = 'application/json';

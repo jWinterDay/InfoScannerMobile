@@ -4,7 +4,7 @@ import 'dart:core';
 abstract class Constants {
   static const bool isProduction = bool.fromEnvironment('dart.vm.product');
 
-  static const bool isUseStetho = true;
+  static const bool isUseStetho = false;
 
   //navigator
   static const String navRoot = '/';

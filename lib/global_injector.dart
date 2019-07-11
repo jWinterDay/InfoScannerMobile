@@ -23,7 +23,7 @@ Future<Injector> initialise() async {
   print('---injector init for $env---');
 
   //host
-  globalInjector.map<String>((injector) => isProd ? 'http://192.168.0.107:5342/jwdsrv/' : 'http://192.168.0.116:5342/jwdsrv/', key: 'host');
+  globalInjector.map<String>((injector) => isProd ? 'http://192.168.0.107:5342/jwdsrv/' : 'http://192.168.153.1:5342/jwdsrv/', key: 'host');
   
   //device id
   String deviceId = 'Unknown';

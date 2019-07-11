@@ -2,7 +2,7 @@ import 'package:mock_web_server/mock_web_server.dart';
 
 
 void httpTest() async {
-  MockWebServer mockServer = new MockWebServer(port: 44776);
+  /*MockWebServer mockServer = new MockWebServer(port: 44776);
   await mockServer.start();
 
   print('mockServer url: ${mockServer.url}');
@@ -17,5 +17,5 @@ void httpTest() async {
   //..headers = headers
   ..delay = new Duration(seconds: 2);
 
-  mockServer.enqueueResponse(mockResponse);
+  mockServer.enqueueResponse(mockResponse);*/
 }

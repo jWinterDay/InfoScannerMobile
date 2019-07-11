@@ -8,7 +8,6 @@ import 'package:info_scanner_mobile/resources/constants.dart';
 import 'package:info_scanner_mobile/global_store.dart';
 
 
-
 class PrefSettings extends StatefulWidget {
   @override
   _PrefSettingsState createState() => _PrefSettingsState();
@@ -46,6 +45,18 @@ class _PrefSettingsState extends State<PrefSettings> {
 
         PreferenceTitle('Else'),
         CheckboxPreference('fgds', 'gfd'),
+
+
+        Align(
+          alignment: Alignment.topLeft,
+          child: FlatButton.icon(
+            label: Text('Test'),
+            icon: Icon(Icons.color_lens),
+            onPressed: () async {
+              
+            },
+          )
+        ),
       ]),
     );
   }

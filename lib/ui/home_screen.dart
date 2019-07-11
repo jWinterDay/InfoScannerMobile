@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:animator/animator.dart';
 import 'package:flutter_redux_dev_tools/flutter_redux_dev_tools.dart';
 
-import 'package:flutter/services.dart';
-
 import 'package:info_scanner_mobile/resources/constants.dart';
 import 'package:info_scanner_mobile/ui/components/footer_common_info.dart';
 import 'package:info_scanner_mobile/ui/left_panel_screen.dart';
@@ -16,6 +14,16 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeState extends State<HomeScreen> with SingleTickerProviderStateMixin, WidgetsBindingObserver {
+  //EventChannel _accelerometerEventChannel = EventChannel('plugins.flutter.io/sensors/accelerometer');
+
+  _HomeState() {
+    //_accelerometerEventChannel
+    //  .receiveBroadcastStream()
+    //  .listen((d) {
+    //    print('received: $d');
+    //  });
+  }
+
   @override
   void initState() {
     WidgetsBinding.instance.addObserver(this);
@@ -68,25 +76,6 @@ class _HomeState extends State<HomeScreen> with SingleTickerProviderStateMixin, 
               label: Text('Palette'),
               icon: Icon(Icons.color_lens),
               onPressed: () => Navigator.pushNamed(context, Constants.navPalette),
-            )
-          ),
-
-
-          Align(
-            alignment: Alignment.topLeft,
-            child: FlatButton.icon(
-              label: Text('Test'),
-              icon: Icon(Icons.color_lens),
-              onPressed: () async {
-                MethodChannel _channel = const MethodChannel('app_settings');
-
-                try {
-                  String res = await _channel.invokeMethod('test');
-                  print('res = $res');
-                } on PlatformException catch (e) {
-                  print('Failed to Invoke: "${e.message}"');
-                }
-              },
             )
           ),
         ],
