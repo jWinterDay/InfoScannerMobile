@@ -8,8 +8,7 @@
          FlutterApplication and put your custom class here. -->
     <application
         android:name="io.flutter.app.FlutterApplication"
-        android:label="info_scanner_mobile"
-        android:icon="@mipmap/ic_launcher">
+        android:label="info_scanner_mobile">
 
         <activity
             android:name=".MainActivity"
@@ -19,11 +18,6 @@
             android:hardwareAccelerated="true"
             android:windowSoftInputMode="adjustResize"
             >
-
-            <!--<meta-data
-                android:name="io.flutter.app.android.SplashScreenUntilFirstFrame"
-                android:value="true" />-->
-
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
                 <category android:name="android.intent.category.LAUNCHER"/>

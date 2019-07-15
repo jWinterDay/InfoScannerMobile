@@ -8,8 +8,4 @@
         <item name="android:windowDrawsSystemBarBackgrounds">false</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
     </style>
-
-    <style name="MtsTheme" parent="@android:style/Theme.Black.NoTitleBar">
-        <item name="android:windowBackground">@drawable/splash_background</item>
-    </style>
 </resources>

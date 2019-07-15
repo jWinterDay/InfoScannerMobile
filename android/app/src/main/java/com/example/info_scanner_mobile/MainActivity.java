@@ -33,8 +33,8 @@ public class MainActivity extends FlutterActivity {
         private Paint maskPaint = new Paint();;
         private Matrix matrix = new Matrix();
 
-        private Bitmap hammer = BitmapFactory.decodeResource(getResources(), R.drawable.hammer);
-        private Bitmap stand = BitmapFactory.decodeResource(getResources(), R.drawable.stand);
+        private Bitmap hammer = BitmapFactory.decodeResource(getResources(), R.mipmap.hammer);
+        private Bitmap stand = BitmapFactory.decodeResource(getResources(), R.mipmap.stand);
 
         private int x = 0;
         private int radius = 0;
@@ -75,7 +75,7 @@ public class MainActivity extends FlutterActivity {
             long elapsedTime = System.currentTimeMillis() - startTime;
             if(elapsedTime < animationDelay) {
                 //simple delay before animations
-                this.postInvalidateDelayed(1000 / framesPerSecond);
+                this.postInvalidateDelayed(animationDelay);//1000 / framesPerSecond);
             } else {
                 if(elapsedTime < animationDuration + animationDelay) {
                     //hammer animation
@@ -98,7 +98,7 @@ public class MainActivity extends FlutterActivity {
         super.onCreate(savedInstanceState);
 
         ClippingView r = new ClippingView(this.getBaseContext());
-        r.setBackgroundColor(Color.RED);
+        r.setBackgroundColor(ContextCompat.getColor(getApplicationContext(), R.color.mtsRed));
         this.addContentView(r, new LinearLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT));
 
         GeneratedPluginRegistrant.registerWith(this);
