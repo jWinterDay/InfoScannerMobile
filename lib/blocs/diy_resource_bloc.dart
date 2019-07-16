@@ -53,7 +53,7 @@ class DiyResourceBloc {
     _searchController = new PublishSubject();
     _searchValObservable = _searchController.stream.publishValue();
     _searchValObservable
-      .debounce(Duration(milliseconds: 300))
+      .debounce((_) => TimerStream(true, const Duration(milliseconds: 300)))
       .listen((d) async {
         //print('[SEARCH] value = $d');
         _reinitController.sink.add(null);
@@ -74,7 +74,7 @@ class DiyResourceBloc {
         //print('[INIT] after flatMap data = $d');
       });
     Observable<DiyResourceListState> _loadMoreObservable = _loadMoreController
-      .debounce(Duration(milliseconds: 300))
+      .debounce((_) => TimerStream(true, const Duration(milliseconds: 300)))
       .where((p) {
         final bool lastIsLoadedAllVal = _lastIsLoadedAllObservable.value;
         //print('[LOAD FILTER] lastIsLoadedAllVal = $lastIsLoadedAllVal');
@@ -98,7 +98,7 @@ class DiyResourceBloc {
 
     //refresh current list without connect to outsource store(database)
     Observable<DiyResourceListState> _refreshRowsObservable = _refreshRowsController
-      .debounce(Duration(milliseconds: 300))
+      .debounce((_) => TimerStream(true, const Duration(milliseconds: 300)))
       .map((inlist) {
         //current state
         final DiyResourceListState lastState = _lastValObservable.value;

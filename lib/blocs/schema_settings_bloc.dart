@@ -31,7 +31,7 @@ class SchemaSettingsBloc {
     _schemaTuneController = new PublishSubject();
     _schemaTuneValObservable = _schemaTuneController.stream.publishValue();
     _schemaTuneValObservable
-      .debounce(Duration(milliseconds: 300))
+      .debounce((_) => TimerStream(true, const Duration(milliseconds: 300)))
       .listen((d) {
         //print('[SCHEMA TUNE] value = $d');
         //print('[SCHEMA TUNE]');
@@ -42,7 +42,7 @@ class SchemaSettingsBloc {
     _schemaSizeController = new PublishSubject();
     _schemaSizeValObservable = _schemaSizeController.stream.publishValue();
     _schemaSizeValObservable
-      .debounce(Duration(milliseconds: 300))
+      .debounce((_) => TimerStream(true, const Duration(milliseconds: 300)))
       .listen((d) {
         print('[SCHEMA SIZE] value = $d');
         //print('[SCHEMA SIZE]');

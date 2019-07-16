@@ -30,7 +30,7 @@ dependencies:
   collection: any
   device_id: any
   http: any
-  flutter_stetho: any
+  flutter_stetho: ^0.2.2
   crypto: any
   sticky_headers: any
   tuple: any
